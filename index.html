@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#16372f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Pension Portfolio">
+    <title>Personal Pension Portfolio</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="styles.css?v=20260501-assistant-risk">
+  </head>
+  <body>
+    <div class="onboarding-overlay active" id="onboardingOverlay" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+      <div class="onboarding-card starter-card">
+        <div class="onboarding-head">
+          <div>
+            <p class="eyebrow" id="onboardingEyebrow">Personal pension portfolio</p>
+            <h1 id="onboardingTitle">Understand your pension path</h1>
+            <p class="section-copy" id="onboardingCopy">Build a clear record, see whether you are on track, and learn the pension terms that affect your choices.</p>
+          </div>
+        </div>
+
+        <div class="starter-grid">
+	          <article class="starter-option" id="resumeOption" hidden>
+	            <p class="eyebrow" id="resumeOptionEyebrow">Your portfolio</p>
+	            <h4 id="resumeOptionTitle">Continue entering my details</h4>
+	            <p class="panel-copy" id="resumeOptionCopy">Open your saved pension record and update the employer, scheme, arrangement and balances.</p>
+	            <button class="primary-button" type="button" id="resumePortfolioButton">Enter my portfolio</button>
+	          </article>
+
+	          <article class="starter-option">
+	            <p class="eyebrow" id="exampleOptionEyebrow">Quick start</p>
+	            <h4 id="exampleOptionTitle">Use DC example</h4>
+            <p class="panel-copy" id="exampleOptionCopy">Load a worked DC example to see how a current pension pot, contributions and retirement income fit together.</p>
+            <button class="primary-button" type="button" id="useExampleButton">Use DC example</button>
+          </article>
+
+	          <article class="starter-option">
+	            <p class="eyebrow" id="dbOptionEyebrow">DB example</p>
+	            <h4 id="dbOptionTitle">Use DB example</h4>
+	            <p class="panel-copy" id="dbOptionCopy">Load a worked DB example to compare a promised pension against the target.</p>
+	            <button class="ghost-button" type="button" id="useDbExampleButton">Use DB example</button>
+	          </article>
+
+	          <article class="starter-option">
+	            <p class="eyebrow" id="stateOptionEyebrow">Mixed history example</p>
+	            <h4 id="stateOptionTitle">Use DC + previous DB example</h4>
+	            <p class="panel-copy" id="stateOptionCopy">Load a worked current DC record with one previous deferred DB promise so the goal view can show what the DC side still needs to do.</p>
+	            <button class="ghost-button" type="button" id="useStateExampleButton">Use DC + previous DB example</button>
+	          </article>
+
+	          <article class="starter-option">
+	            <p class="eyebrow" id="mixedOptionEyebrow">Mixed history + State Pension</p>
+	            <h4 id="mixedOptionTitle">Use DC + DB + State Pension example</h4>
+	            <p class="panel-copy" id="mixedOptionCopy">Load a worked current DC record with one previous DB promise plus a qualifying full-rate State Pension forecast.</p>
+	            <button class="ghost-button" type="button" id="useMixedExampleButton">Use DC + DB + State Pension example</button>
+	          </article>
+
+          <article class="starter-option">
+            <p class="eyebrow" id="blankOptionEyebrow">Blank start</p>
+            <h4 id="blankOptionTitle">Start with an empty record</h4>
+            <p class="panel-copy" id="blankOptionCopy">Add your own job, pension and goal details, then compare the result with your target.</p>
+            <button class="ghost-button" type="button" id="startBlankButton">Start blank</button>
+          </article>
+        </div>
+
+        <div class="starter-subsection">
+          <p class="eyebrow">Risk pathway demos</p>
+          <div class="starter-grid starter-grid-secondary">
+            <article class="starter-option starter-option-compact">
+              <p class="eyebrow">Low earner</p>
+              <h4>Use low-earner example</h4>
+              <p class="panel-copy">Current DC record in the opt-in band at GBP 9,500 / year, showing the statutory minimum opportunity on qualifying earnings.</p>
+              <button class="ghost-button" type="button" id="useLowEarnerExampleButton">Use low-earner example</button>
+            </article>
+
+            <article class="starter-option starter-option-compact">
+              <p class="eyebrow">Part-time</p>
+              <h4>Use part-time example</h4>
+              <p class="panel-copy">Current DC record for a part-time worker at GBP 12,000 / year, showing that part-time status does not remove automatic-enrolment rights.</p>
+              <button class="ghost-button" type="button" id="usePartTimeExampleButton">Use part-time example</button>
+            </article>
+
+            <article class="starter-option starter-option-compact">
+              <p class="eyebrow">Multiple jobs</p>
+              <h4>Use multiple-jobs example</h4>
+              <p class="panel-copy">Current DC record with a second concurrent job, showing separate job-by-job assessment instead of aggregated earnings.</p>
+              <button class="ghost-button" type="button" id="useMultipleJobsExampleButton">Use multiple-jobs example</button>
+            </article>
+
+            <article class="starter-option starter-option-compact">
+              <p class="eyebrow">Self-employed</p>
+              <h4>Use self-employed example</h4>
+              <p class="panel-copy">Personal pension route for irregular self-employed income, showing no employer automatic-enrolment contribution and a bigger cash-buffer need.</p>
+              <button class="ghost-button" type="button" id="useSelfEmployedExampleButton">Use self-employed example</button>
+            </article>
+          </div>
+        </div>
+
+        <div class="onboarding-actions">
+          <p id="onboardingNote">Saved locally in this browser only.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <div class="shell-bar">
+          <div class="brand">
+            <div class="brand-mark">PP</div>
+            <div>
+              <p class="eyebrow">Personal portfolio</p>
+              <h1>Personal Pension Portfolio</h1>
+            </div>
+          </div>
+
+          <nav class="nav-list">
+            <button class="nav-item active" type="button" data-view="dashboard">
+              <span class="nav-icon">01</span>
+              Dashboard
+            </button>
+            <button class="nav-item" type="button" data-view="finder">
+              <span class="nav-icon">02</span>
+              Pension Record
+            </button>
+            <button class="nav-item" type="button" data-view="goal">
+              <span class="nav-icon">03</span>
+              Retirement Goal
+            </button>
+            <button class="nav-item" type="button" data-view="coach">
+              <span class="nav-icon">04</span>
+              AI Assistant
+            </button>
+          </nav>
+        </div>
+
+        <div class="sidebar-note">
+          <p class="eyebrow">Boundary</p>
+          <p>Guidance only. Not regulated financial advice or solicitor advice.</p>
+        </div>
+      </aside>
+
+      <div class="main-shell">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Personal portfolio</p>
+            <h2 id="viewTitle">Dashboard</h2>
+          </div>
+          <div class="topbar-actions">
+            <span class="status-pill" id="portfolioStatusPill"><span></span> Local portfolio</span>
+            <button class="ghost-button" type="button" id="installAppButton" hidden>Install App</button>
+            <button class="ghost-button" type="button" id="contextActionButton" data-view-jump="finder">Open Pension Record</button>
+          </div>
+        </header>
+
+        <main>
+          <section class="view active" id="dashboard" aria-label="Dashboard">
+            <div class="metric-grid">
+              <article class="metric-card metric-strong">
+                <p>Target retirement income / month</p>
+                <strong id="projectedIncome">GBP 0</strong>
+                <span id="incomeStatus">Updating</span>
+              </article>
+              <article class="metric-card">
+                <p>Projected retirement income / month</p>
+                <strong id="emergencyValue">GBP 0</strong>
+                <span id="emergencyStatus">Checking target coverage</span>
+              </article>
+              <article class="metric-card">
+                <p>Gap to goal / month</p>
+                <strong id="monthlyTargetValue">GBP 0</strong>
+                <span id="yearlyTargetValue">Tracking monthly target gap</span>
+              </article>
+              <article class="metric-card">
+                <p id="connectedMetricLabel">Current pension wealth</p>
+                <strong id="connectedCount">GBP 0</strong>
+                <span id="connectedStatus">Tracking current pension wealth</span>
+              </article>
+            </div>
+
+            <div class="dashboard-main-grid">
+              <article class="panel dashboard-progress-panel">
+                <div class="panel-heading">
+                  <div>
+                    <p class="eyebrow">Goal progress summary</p>
+                    <h4>How you are tracking now</h4>
+                  </div>
+                </div>
+                <div class="summary-list" id="positionList"></div>
+              </article>
+
+              <article class="panel dashboard-pensions-panel">
+                <div class="panel-heading">
+                  <div>
+                    <p class="eyebrow">Pension record summary</p>
+                    <h4>Current and previous pensions</h4>
+                  </div>
+                </div>
+                <div class="pot-list" id="potList"></div>
+              </article>
+
+              <article class="panel dashboard-employment-panel">
+                <div class="panel-heading">
+                  <div>
+                    <p class="eyebrow">Current employment</p>
+                    <h4>Current employment snapshot</h4>
+                  </div>
+                </div>
+                <div class="summary-list" id="schemeList"></div>
+              </article>
+
+              <article class="panel dashboard-contributions-panel">
+                <div class="panel-heading">
+                  <div>
+                    <p class="eyebrow">Contribution snapshot</p>
+                    <h4>Contributions for the current job</h4>
+                  </div>
+                </div>
+                <div class="summary-list" id="contributionList"></div>
+              </article>
+
+              <article class="panel dashboard-pathway-panel" id="pathwayPanel" hidden>
+                <div class="panel-heading">
+                  <div>
+                    <p class="eyebrow">Tailored pathway</p>
+                    <h4>Under-saving risk</h4>
+                  </div>
+                </div>
+                <div id="pathwayList"></div>
+              </article>
+            </div>
+
+            <article class="panel dashboard-savings-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Short-Term Savings</p>
+                  <h4>Emergency savings snapshot</h4>
+                </div>
+              </div>
+              <div class="summary-list" id="shortTermSavingsSummary"></div>
+            </article>
+          </section>
+
+          <section class="view" id="finder" aria-label="Pension Record">
+            <article class="panel">
+              <div class="panel-heading panel-heading-wrap">
+                <div>
+                  <p class="eyebrow">Employment history</p>
+                  <h4>Current and previous employment records</h4>
+                </div>
+                <div class="panel-actions history-actions">
+                  <button class="ghost-button" type="button" id="addCurrentRecordButton">Add current job</button>
+                  <button class="ghost-button" type="button" id="addPreviousRecordButton">Add previous job</button>
+                </div>
+              </div>
+              <p class="panel-copy">Keep one current record for the job you have now. Add previous jobs and deferred pensions below so the record shows both now and before.</p>
+              <div class="employment-history-list" id="employmentHistoryList"></div>
+            </article>
+          </section>
+
+          <section class="view" id="goal" aria-labelledby="goal-title">
+            <div class="section-head section-head-simple">
+              <h3 id="goal-title" class="section-title-inline-text">Retirement Goal</h3>
+              <p class="section-copy" id="goalSectionCopy">Set the monthly retirement income you want, then compare the current record against that goal.</p>
+            </div>
+
+            <div class="goal-stage">
+              <div class="stage-head">
+                <p class="eyebrow">Step 1</p>
+                <h4 id="goalStepOneTitle">Set target</h4>
+                <p class="section-copy" id="goalStepOneCopy">Enter the core facts that drive the retirement comparison.</p>
+              </div>
+
+              <div class="goal-workspace">
+                <article class="panel">
+                  <div class="panel-heading">
+                    <div>
+                      <p class="eyebrow">Goal input</p>
+                      <h4 id="goalInputHeading">Set your target</h4>
+                    </div>
+                  </div>
+                  <div class="form-grid goal-input-grid">
+                    <label>
+                      Current age
+                      <input id="ageInput" type="number" min="18" max="74" step="1">
+                    </label>
+                    <label>
+                      Retirement age
+                      <input id="retireAgeInput" type="number" min="55" max="75">
+                    </label>
+                    <label>
+                      Retirement income goal / month
+                      <input id="targetMonthlyInput" type="number" min="0" step="50">
+                    </label>
+                    <label id="statePensionField">
+                      State Pension forecast / year
+                      <input id="statePensionInput" type="number" min="0" step="100">
+                    </label>
+                    <label id="statePensionAgeField">
+                      State Pension age
+                      <input id="statePensionAgeInput" type="number" min="60" max="75" step="1">
+                    </label>
+                    <label id="currentPotField">
+                      Current pension pot
+                      <input id="currentPotInput" type="number" min="0" step="1">
+                    </label>
+                    <label id="dbAnnualPensionField" hidden>
+                      Annual DB pension at scheme age
+                      <input id="dbAnnualPensionInput" type="number" min="0" step="100">
+                    </label>
+                    <label id="dbSchemePensionAgeField" hidden>
+                      DB scheme pension age
+                      <input id="dbSchemePensionAgeInput" type="number" min="55" max="75" step="1">
+                    </label>
+                    <label id="dbAmountBasisField" hidden>
+                      DB amount basis
+                      <select id="dbAmountBasisInput">
+                        <option value="at-scheme-age">Statement amount at scheme age</option>
+                        <option value="current-deferred">Current deferred amount</option>
+                      </select>
+                    </label>
+                    <label id="dbRevaluationField" hidden>
+                      DB yearly increase before pension age %
+                      <input id="dbRevaluationInput" type="number" min="0" max="10" step="0.1">
+                    </label>
+                    <label id="dbIndexationField" hidden>
+                      DB yearly increase after it starts %
+                      <input id="dbIndexationInput" type="number" min="0" max="10" step="0.1">
+                    </label>
+                    <label id="dbAdjustmentField" hidden>
+                      DB early/late retirement adjustment % / year
+                      <input id="dbAdjustmentInput" type="number" min="-15" max="15" step="0.1">
+                    </label>
+                  </div>
+                  <p class="panel-copy inline-guidance" id="goalInputModeCopy">This goal view is using the current record arrangement to decide which pension inputs matter for the projection.</p>
+                  <div class="assumption-panel" id="assumptionPanel">
+                    <p class="eyebrow" id="assumptionPanelEyebrow">Projection assumptions</p>
+                    <div class="segmented assumption-segmented" id="assumptionPresetList">
+                      <button class="segment" type="button" data-assumption-preset="cautious">Cautious</button>
+                      <button class="segment" type="button" data-assumption-preset="base">Base</button>
+                      <button class="segment" type="button" data-assumption-preset="optimistic">Optimistic</button>
+                    </div>
+                    <div class="form-grid compact-assumption-grid">
+                      <label>
+                        Money view
+                        <select id="moneyModeInput">
+                          <option value="today">Today's money</option>
+                          <option value="nominal">Nominal at retirement</option>
+                        </select>
+                      </label>
+                      <label>
+                        Inflation % / year
+                        <input id="inflationInput" type="number" min="0" max="10" step="0.1">
+                      </label>
+                      <label>
+                        Annual pension charges %
+                        <input id="annualChargeInput" type="number" min="0" max="3" step="0.05">
+                      </label>
+                      <label>
+                        Pay rise assumption % / year
+                        <input id="salaryGrowthInput" type="number" min="0" max="10" step="0.1">
+                      </label>
+                      <label>
+                        Contribution increase % / year
+                        <input id="contributionEscalationInput" type="number" min="0" max="10" step="0.1">
+                      </label>
+                      <label>
+                        Tax relief mode
+                        <select id="taxReliefModeInput">
+                          <option value="net-pay">Net pay</option>
+                          <option value="relief-at-source">Relief at source</option>
+                          <option value="salary-sacrifice">Salary sacrifice</option>
+                        </select>
+                      </label>
+                      <label>
+                        Marginal tax %
+                        <input id="marginalTaxInput" type="number" min="0" max="45" step="1">
+                      </label>
+                      <label>
+                        Employee NI saving %
+                        <input id="employeeNiInput" type="number" min="0" max="12" step="1">
+                      </label>
+                    </div>
+                    <div class="summary-list compact-assumption-list" id="assumptionDetailList"></div>
+                    <div class="summary-list compact-assumption-list" id="dataConfidenceList"></div>
+                    <div class="assumption-path-panel">
+                      <div class="assumption-path-copy">
+                        <p class="eyebrow">Suggested paths to target</p>
+                        <p class="panel-copy" id="assumptionPathCopy">Compare what each assumption path points to and the rough monthly pension saving needed to land on the target.</p>
+                      </div>
+                      <div class="assumption-path-list" id="assumptionPathList"></div>
+                    </div>
+                  </div>
+                </article>
+
+                <article class="panel">
+                  <div class="panel-heading">
+                    <div>
+                      <p class="eyebrow">Compare result</p>
+                      <h4 id="goalCompareHeading">Current comparison</h4>
+                    </div>
+                  </div>
+                  <div class="summary-list" id="goalTrackerList"></div>
+                </article>
+              </div>
+            </div>
+
+            <div class="goal-stage">
+              <div class="stage-head">
+                <p class="eyebrow">Step 2</p>
+                <h4 id="goalStepTwoTitle">Stress-test</h4>
+                <p class="section-copy" id="goalStepTwoCopy">Optional user-entered checks for cash, household, adequacy and DC investment. The app calculates from what you enter.</p>
+              </div>
+
+              <div class="advanced-panel-stack">
+                <details class="advanced-panel">
+                  <summary>Short-term savings</summary>
+                  <div class="advanced-panel-body">
+                    <p class="panel-copy">Balance cash and pension saving so short-term shocks do not force long-term setbacks.</p>
+                    <div class="form-grid support-input-grid">
+                      <label>
+                        Emergency savings target
+                        <input id="emergencyTargetInput" type="number" min="0" step="100">
+                      </label>
+                      <label>
+                        Flexible saving budget / month
+                        <input id="monthlyBudgetInput" type="number" min="0" step="25">
+                      </label>
+                      <label>
+                        Cash share of that budget %
+                        <input id="cashShareInput" type="number" min="0" max="100" step="5">
+                      </label>
+                      <label>
+                        Income pattern
+                        <select id="incomePatternInput">
+                          <option value="steady">Steady income</option>
+                          <option value="lower">Lower-income pressure</option>
+                          <option value="irregular">Irregular income</option>
+                        </select>
+                      </label>
+                      <label>
+                        Pause window to cover / months
+                        <input id="pauseMonthsInput" type="number" min="1" max="36" step="1">
+                      </label>
+                    </div>
+                    <div class="summary-list" id="cashPlannerList"></div>
+                  </div>
+                </details>
+
+                <details class="advanced-panel">
+                  <summary>Couple planning</summary>
+                  <div class="advanced-panel-body">
+                    <p class="panel-copy" id="householdIntroCopy">Add a spouse or partner only if you want a joint retirement view based on both pension records.</p>
+                    <label class="toggle-row">
+                      <input id="householdEnabledInput" type="checkbox">
+                      Include spouse or partner in the household plan
+                    </label>
+                    <div class="household-planning-details" id="householdPlanningDetails" hidden>
+                      <div class="form-grid partner-input-grid">
+                        <label>
+                          Partner name
+                          <input id="partnerNameInput" type="text">
+                        </label>
+                        <label>
+                          Partner age
+                          <input id="partnerAgeInput" type="number" min="18" max="75" step="1">
+                        </label>
+                        <label>
+                          Partner retirement age
+                          <input id="partnerRetireAgeInput" type="number" min="55" max="75" step="1">
+                        </label>
+                        <label>
+                          Partner pension type
+                          <select id="partnerPensionTypeInput">
+                            <option value="DC">DC</option>
+                            <option value="DB">DB</option>
+                            <option value="Hybrid">Hybrid</option>
+                            <option value="State-only">State Pension only</option>
+                            <option value="Unknown">Unknown</option>
+                          </select>
+                        </label>
+                        <label>
+                          Partner current pot
+                          <input id="partnerCurrentPotInput" type="number" min="0" step="500">
+                        </label>
+                        <label>
+                          Partner pension saving / month
+                          <input id="partnerMonthlyContributionInput" type="number" min="0" step="25">
+                        </label>
+                        <label>
+                          Partner State Pension / year
+                          <input id="partnerStatePensionInput" type="number" min="0" step="100">
+                        </label>
+                        <label>
+                          Joint retirement goal / month
+                          <input id="householdGoalInput" type="number" min="0" step="50">
+                        </label>
+                        <label>
+                          Household what-if
+                          <select id="householdScenarioTypeInput">
+                            <option value="none">No household comparison</option>
+                            <option value="partner-retire-later">Partner retires later</option>
+                            <option value="partner-pause-saving">Partner pauses saving</option>
+                            <option value="partner-lower-contributions">Partner contributes less</option>
+                            <option value="both-raise-contributions">Both add to pensions</option>
+                          </select>
+                        </label>
+                        <label>
+                          <span id="householdScenarioLabel">Scenario value</span>
+                          <input id="householdScenarioValueInput" type="number" min="0" step="1">
+                        </label>
+                      </div>
+                      <div class="summary-list" id="householdGoalList"></div>
+                      <div class="summary-list" id="householdScenarioList"></div>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="advanced-panel">
+                  <summary>Adequacy factors</summary>
+                  <div class="advanced-panel-body">
+                    <p class="panel-copy">Keep this light-touch: add only the household pressures that materially affect savings adequacy.</p>
+                    <div class="form-grid support-input-grid">
+                      <label>
+                        Housing status
+                        <select id="housingStatusInput">
+                          <option value="unknown">Not entered</option>
+                          <option value="owned-outright">Own outright</option>
+                          <option value="mortgage">Mortgage</option>
+                          <option value="renting">Renting</option>
+                          <option value="shared">Shared household costs</option>
+                        </select>
+                      </label>
+                      <label>
+                        Housing cost / month
+                        <input id="housingCostInput" type="number" min="0" step="25">
+                      </label>
+                      <label>
+                        Debt pressure
+                        <select id="debtPressureInput">
+                          <option value="none">None entered</option>
+                          <option value="manageable">Manageable</option>
+                          <option value="high">High</option>
+                        </select>
+                      </label>
+                      <label>
+                        Dependants
+                        <input id="dependantsInput" type="number" min="0" max="10" step="1">
+                      </label>
+                      <label>
+                        Survivor/dependant need
+                        <select id="survivorNeedInput">
+                          <option value="unknown">Not entered</option>
+                          <option value="low">Low</option>
+                          <option value="medium">Medium</option>
+                          <option value="high">High</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div class="summary-list" id="adequacyFactorList"></div>
+                  </div>
+                </details>
+
+                <details class="advanced-panel" id="scenarioPanel" hidden>
+                  <summary id="scenarioPanelSummary">Assistant what-if</summary>
+                  <div class="advanced-panel-body">
+                    <p class="panel-copy" id="scenarioIntroCopy">Ask the AI Assistant for plain-English what-if examples instead of using a separate scenario panel.</p>
+                    <div class="notice-panel" id="scenarioBlockedState" hidden>
+                      <p class="eyebrow">Resolve arrangement first</p>
+                      <h5>Choose a pension type before running scenarios</h5>
+                      <p class="panel-copy" id="scenarioBlockedCopy">The scenario modeller stays paused until the current Unknown record is reclassified.</p>
+                    </div>
+                    <div class="form-grid scenario-input-grid" id="scenarioInputGrid">
+                      <label>
+                        Scenario to test
+                        <select id="scenarioTypeInput">
+                          <option value="none">No comparison selected</option>
+                          <option value="retire-later">Retire later</option>
+                          <option value="raise-contributions">Raise your contributions</option>
+                          <option value="pause-saving">Pause pension saving</option>
+                          <option value="lower-earnings">Lower earnings</option>
+                          <option value="restart-after-pause">Restart after a pause</option>
+                          <option value="split-savings">Shift more cash into pension</option>
+                        </select>
+                      </label>
+                      <label>
+                        <span id="scenarioPrimaryLabel">Scenario value</span>
+                        <input id="scenarioPrimaryInput" type="number" min="0" step="1">
+                      </label>
+                    </div>
+                    <div class="summary-list" id="scenarioSummaryList"></div>
+                  </div>
+                </details>
+
+                <details class="advanced-panel" id="selfSelectHintPanel" hidden open>
+                  <summary>DC investment ideas</summary>
+                  <div class="advanced-panel-body">
+                    <p class="panel-copy" id="selfSelectHintCopy">Use Pension Record to choose investment access and style, then use this Goal page and the AI Assistant for plain-English checks.</p>
+                    <div class="summary-list" id="selfSelectHintList"></div>
+                    <div class="panel-actions">
+                      <button class="ghost-button" type="button" data-view-jump="finder">Open Pension Record</button>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="advanced-panel" id="selfSelectPanel" hidden open>
+                  <summary id="selfSelectPanelSummary">DC investment guide</summary>
+                  <div class="advanced-panel-body">
+                    <p class="panel-copy" id="selfSelectIntroCopy">Use this as a built-in risk and fund-type guide for the current DC record. Ask the AI Assistant for plain-English checks.</p>
+                    <div class="form-grid investment-control-grid">
+                      <label>
+                        Investment access
+                        <select id="investmentAccessInput">
+                          <option value="default">Default fund only</option>
+                          <option value="workplace-self-select">Workplace self-select</option>
+                          <option value="sipp">SIPP</option>
+                        </select>
+                      </label>
+                      <label>
+                        Risk style
+                        <select id="investmentStyleInput">
+                          <option value="conservative">Conservative</option>
+                          <option value="balanced">Balanced</option>
+                          <option value="aggressive">Growth</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div class="summary-list" id="selfSelectSummaryList"></div>
+                    <div class="summary-list" id="selfSelectAllocationList"></div>
+                    <details class="self-select-example-details">
+                      <summary id="selfSelectExamplesSummary">Example fund types and broad-market illustrations</summary>
+                      <div class="self-select-example-body">
+                        <p class="panel-copy" id="selfSelectExampleCopy"></p>
+                        <div class="follow-up-list" id="selfSelectExampleList"></div>
+                      </div>
+                    </details>
+                    <p class="panel-copy self-select-disclaimer" id="selfSelectDisclaimer"></p>
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <div class="goal-stage">
+              <div class="stage-head">
+                <p class="eyebrow">Step 3</p>
+                <h4 id="goalStepThreeTitle">Compare result</h4>
+                <p class="section-copy" id="goalStepThreeCopy">Review the current projection and the compact result rows before changing assumptions.</p>
+              </div>
+
+              <article class="panel chart-panel">
+                <div class="panel-heading">
+                  <div>
+                    <p class="eyebrow">Projection</p>
+                    <h4 id="projectionTitle">Projected pot from now to retirement</h4>
+                  </div>
+                  <span class="data-badge" id="projectionBadge">Growth assumption 4%</span>
+                </div>
+                <div class="notice-panel projection-blocked-state" id="projectionBlockedState" hidden>
+                  <p class="eyebrow">Projection paused</p>
+                  <h5>Confirm the arrangement before comparing retirement income</h5>
+                  <p class="panel-copy" id="projectionBlockedCopy">No retirement projection is shown while any meaningful record is still marked Unknown.</p>
+                </div>
+                <div class="projection-interaction" id="projectionInteraction">
+                  <div class="projection-status-row" id="projectionStatusRow"></div>
+                  <label class="projection-scrubber" id="projectionScrubber">
+                    Compare age
+                    <input id="projectionAgeInput" type="range" min="0" max="100" step="1">
+                  </label>
+                  <p class="sr-only" id="projectionFocusCopy">Move the slider or use the keyboard to inspect the projection.</p>
+                </div>
+                <canvas id="projectionChart" width="920" height="360" tabindex="0" aria-label="Projected cumulative pension wealth chart" aria-describedby="projectionFocusCopy"></canvas>
+                <div class="projection-legend" id="projectionLegend"></div>
+                <div class="summary-list projection-detail-list" id="projectionDetailList"></div>
+              </article>
+
+              <div class="goal-detail-grid" id="goalDetailGrid">
+                <article class="panel" id="goalStatusPanel">
+                  <div class="panel-heading">
+                    <div>
+                      <p class="eyebrow" id="goalStatusEyebrow">Status</p>
+                      <h4 id="goalStatusHeading">Comparison status</h4>
+                    </div>
+                  </div>
+                  <div class="summary-list" id="benchmarkList"></div>
+                </article>
+
+                <article class="panel" id="goalPathwayPanel" hidden>
+                  <div class="panel-heading">
+                    <div>
+                      <p class="eyebrow">Tailored pathway</p>
+                      <h4>Workplace-pension risk check</h4>
+                    </div>
+                  </div>
+                  <div id="goalPathwayList"></div>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <section class="view" id="coach" aria-label="AI Assistant">
+            <div class="section-head section-head-simple section-head-copy-only">
+              <p class="section-copy">Use a topic if helpful, or just type your question. The assistant will ask for any missing facts and answer using your record where it can.</p>
+            </div>
+
+            <div class="assistant-workspace">
+              <article class="panel chat-panel">
+                <div class="assistant-chat-head">
+                  <div>
+                    <p class="eyebrow">Chat</p>
+                    <h4>Ask your next pension question</h4>
+                  </div>
+                  <span class="data-badge" id="assistantTopicBadge">On-track planning</span>
+                </div>
+                <p class="section-copy" id="assistantTopicCopy">Check whether you are on track, what moves the result, and what to do next.</p>
+                <p class="assistant-prototype-note">Prototype: answers use built-in guidance rules. A live service could extract contribution, scheme, charge, pot and retirement-age details from uploaded or provider-linked documents.</p>
+                <div class="prompt-row assistant-starter-row" id="assistantStarterQuestions"></div>
+                <div class="chat-window" id="chatWindow" aria-live="polite"></div>
+                <form class="chat-form" id="chatForm">
+                  <input id="chatInput" type="text" placeholder="Ask about your goal, pension terms, contributions or next step">
+                  <button type="submit">Send</button>
+                </form>
+              </article>
+
+              <div class="assistant-rail assistant-side-simple">
+                <article class="panel assistant-topic-panel">
+                  <div class="panel-heading">
+                    <div>
+                      <p class="eyebrow">Topics</p>
+                      <h4>Choose a topic</h4>
+                    </div>
+                  </div>
+                  <div class="assistant-topic-grid" id="assistantTopicList"></div>
+                  <details class="assistant-topic-more" id="assistantTopicMore">
+                    <summary>More topics</summary>
+                    <div class="assistant-topic-grid" id="assistantTopicOverflowList"></div>
+                  </details>
+                </article>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <nav class="bottom-nav" id="bottomNav" aria-label="Mobile and app navigation">
+      <button class="bottom-nav-item active" type="button" data-view="dashboard">
+        <span class="bottom-nav-icon">01</span>
+        <span>Dashboard</span>
+      </button>
+      <button class="bottom-nav-item" type="button" data-view="finder">
+        <span class="bottom-nav-icon">02</span>
+        <span>Record</span>
+      </button>
+      <button class="bottom-nav-item" type="button" data-view="goal">
+        <span class="bottom-nav-icon">03</span>
+        <span>Goal</span>
+      </button>
+      <button class="bottom-nav-item" type="button" data-view="coach">
+        <span class="bottom-nav-icon">04</span>
+        <span>Assistant</span>
+      </button>
+    </nav>
+
+    <script src="app.js?v=20260501-assistant-risk"></script>
+  </body>
+</html>

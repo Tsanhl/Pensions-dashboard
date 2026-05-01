@@ -1,0 +1,28 @@
+{
+  "name": "Personal Pension Portfolio",
+  "short_name": "Pension App",
+  "description": "Track your pension record, retirement goal, and next actions in a phone-friendly app shell.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7faf8",
+  "theme_color": "#16372f",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
