@@ -3018,8 +3018,9 @@ function currentRecordSupportsSelfSelectInvesting(state = appState) {
 }
 
 function hasProjectedDcAssets(state = appState) {
+  const history = getEmploymentHistoryForState(state);
+  const hasDcPot = history.some((record) => isProjectedDcArrangement(record.pensionType) && toNumber(record.potValue) > 0);
   const current = getCurrentEmploymentRecord(state);
-  const hasDcPot = current && isProjectedDcArrangement(current.pensionType) && toNumber(current.potValue) > 0;
   const hasCurrentDcContributionStream =
     current &&
     isProjectedDcArrangement(current.pensionType) &&
@@ -3863,8 +3864,13 @@ function renderRows(target, rows) {
 }
 
 function getContributionMismatch() {
-  const expected = appState.payslipContribution + getAnnualContributionBase(appState) / 12 * (appState.employerContributionPct / 100);
-  return Math.round(appState.providerContribution - expected);
+  const breakdown = getContributionBreakdown(appState);
+  const expected =
+    normalizeEmploymentType(appState.employmentType) === "self"
+      ? breakdown.employeeMonthly
+      : toNumber(appState.payslipContribution) + breakdown.employerMonthly;
+  const mismatch = toNumber(appState.providerContribution) - expected;
+  return Math.abs(mismatch) < 2 ? 0 : Math.round(mismatch);
 }
 
 const ASSISTANT_STOP_WORDS = new Set([
@@ -8583,8 +8589,10 @@ function getConnectedPensions(state = appState) {
 
 function totalPrivatePensionWealth(input = appState) {
   const state = typeof input === "number" ? { ...appState, currentPot: input } : input;
-  const current = getCurrentEmploymentRecord(state);
-  return current && isProjectedDcArrangement(current.pensionType) ? Math.max(0, toNumber(current.potValue)) : 0;
+  return getEmploymentHistoryForState(state).reduce(
+    (total, record) => total + (isProjectedDcArrangement(record.pensionType) ? Math.max(0, toNumber(record.potValue)) : 0),
+    0
+  );
 }
 
 function renderMetrics(projection) {
