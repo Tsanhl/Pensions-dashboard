@@ -11,7 +11,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
-    <link rel="stylesheet" href="styles.css?v=20260515-audit-trail">
+    <link rel="stylesheet" href="styles.css?v=20260515-dashboard-confidence">
   </head>
   <body>
     <div class="onboarding-overlay active" id="onboardingOverlay" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
@@ -133,7 +133,7 @@
             </button>
             <button class="nav-item" type="button" data-view="coach">
               <span class="nav-icon">04</span>
-              AI Assistant
+              Guidance Assistant
             </button>
           </nav>
         </div>
@@ -159,6 +159,12 @@
 
         <main>
           <section class="view active" id="dashboard" aria-label="Dashboard">
+            <div class="notice-panel notice-warning demo-data-banner" id="demoDataBanner" hidden>
+              <p class="eyebrow">Demo data loaded</p>
+              <h5>These are fictional sample figures</h5>
+              <p class="panel-copy" id="demoDataBannerCopy">They are accurate only within the assumptions shown and are not provider-verified.</p>
+            </div>
+
             <div class="metric-grid">
               <article class="metric-card metric-strong">
                 <p>Target retirement income / month</p>
@@ -179,6 +185,11 @@
                 <p id="connectedMetricLabel">Current pension wealth</p>
                 <strong id="connectedCount">GBP 0</strong>
                 <span id="connectedStatus">Tracking current pension wealth</span>
+              </article>
+              <article class="metric-card metric-confidence">
+                <p>Data confidence</p>
+                <strong id="dataConfidenceValue">User-entered</strong>
+                <span id="dataConfidenceStatus">Sample data, not provider-linked records</span>
               </article>
             </div>
 
@@ -573,7 +584,7 @@
                 <details class="advanced-panel" id="scenarioPanel" hidden>
                   <summary id="scenarioPanelSummary">Assistant what-if</summary>
                   <div class="advanced-panel-body">
-                    <p class="panel-copy" id="scenarioIntroCopy">Ask the AI Assistant for plain-English what-if examples instead of using a separate scenario panel.</p>
+                    <p class="panel-copy" id="scenarioIntroCopy">Ask the Guidance Assistant for plain-English what-if examples instead of using a separate scenario panel.</p>
                     <div class="notice-panel" id="scenarioBlockedState" hidden>
                       <p class="eyebrow">Resolve arrangement first</p>
                       <h5>Choose a pension type before running scenarios</h5>
@@ -604,7 +615,7 @@
                 <details class="advanced-panel" id="selfSelectHintPanel" hidden open>
                   <summary>DC investment ideas</summary>
                   <div class="advanced-panel-body">
-                    <p class="panel-copy" id="selfSelectHintCopy">Use Pension Record to choose investment access and style, then use this Goal page and the AI Assistant for plain-English checks.</p>
+                    <p class="panel-copy" id="selfSelectHintCopy">Use Pension Record to choose investment access and style, then use this Goal page and the Guidance Assistant for plain-English checks.</p>
                     <div class="summary-list" id="selfSelectHintList"></div>
                     <div class="panel-actions">
                       <button class="ghost-button" type="button" data-view-jump="finder">Open Pension Record</button>
@@ -615,7 +626,7 @@
                 <details class="advanced-panel" id="selfSelectPanel" hidden open>
                   <summary id="selfSelectPanelSummary">DC investment guide</summary>
                   <div class="advanced-panel-body">
-                    <p class="panel-copy" id="selfSelectIntroCopy">Use this as a built-in risk and fund-type guide for the current DC record. Ask the AI Assistant for plain-English checks.</p>
+                    <p class="panel-copy" id="selfSelectIntroCopy">Use this as a built-in risk and fund-type guide for the current DC record. Ask the Guidance Assistant for plain-English checks.</p>
                     <div class="form-grid investment-control-grid">
                       <label>
                         Investment access
@@ -672,7 +683,7 @@
                 <div class="notice-panel notice-warning" id="secondJobBoundaryWarning" hidden>
                   <p class="eyebrow">Projection boundary</p>
                   <h5>Second job is not in the main pot projection</h5>
-                  <p class="panel-copy" id="secondJobBoundaryCopy">Job 2 is checked for workplace-pension rights only.</p>
+                  <p class="panel-copy" id="secondJobBoundaryCopy">Job 2 is checked for workplace-pension rights and possible employer-contribution opportunities.</p>
                 </div>
                 <div class="projection-interaction" id="projectionInteraction">
                   <div class="projection-status-row" id="projectionStatusRow"></div>
@@ -685,15 +696,16 @@
                 <canvas id="projectionChart" width="920" height="360" tabindex="0" aria-label="Projected cumulative pension wealth chart" aria-describedby="projectionFocusCopy"></canvas>
                 <div class="projection-legend" id="projectionLegend"></div>
                 <div class="summary-list projection-detail-list" id="projectionDetailList"></div>
-                <div class="calculation-audit-panel" id="calculationAuditPanel">
-                  <div class="panel-heading panel-heading-wrap">
+                <details class="calculation-audit-panel" id="calculationAuditPanel" open>
+                  <summary>How this figure was calculated</summary>
+                  <div class="calculation-audit-head">
                     <div>
                       <p class="eyebrow">Calculation audit trail</p>
                       <h4>Assumptions behind the result</h4>
                     </div>
                   </div>
                   <div class="summary-list calculation-audit-list" id="calculationAuditList"></div>
-                </div>
+                </details>
               </article>
 
               <div class="goal-detail-grid" id="goalDetailGrid">
@@ -720,7 +732,7 @@
             </div>
           </section>
 
-          <section class="view" id="coach" aria-label="AI Assistant">
+          <section class="view" id="coach" aria-label="Guidance Assistant">
             <div class="section-head section-head-simple section-head-copy-only">
               <p class="section-copy">Use a topic if helpful, or just type your question. The assistant will ask for any missing facts and answer using your record where it can.</p>
             </div>
@@ -735,7 +747,7 @@
                   <span class="data-badge" id="assistantTopicBadge">On-track planning</span>
                 </div>
                 <p class="section-copy" id="assistantTopicCopy">Check whether you are on track, what moves the result, and what to do next.</p>
-                <p class="assistant-prototype-note">Prototype: answers use built-in guidance rules. A live service could extract contribution, scheme, charge, pot and retirement-age details from uploaded or provider-linked documents.</p>
+                <p class="assistant-prototype-note">Built-in prototype rules; a production version could connect to secure AI and provider data.</p>
                 <div class="prompt-row assistant-starter-row" id="assistantStarterQuestions"></div>
                 <div class="chat-window" id="chatWindow" aria-live="polite"></div>
                 <form class="chat-form" id="chatForm">
@@ -780,10 +792,10 @@
       </button>
       <button class="bottom-nav-item" type="button" data-view="coach">
         <span class="bottom-nav-icon">04</span>
-        <span>Assistant</span>
+        <span>Guidance</span>
       </button>
     </nav>
 
-    <script src="app.js?v=20260515-audit-trail"></script>
+    <script src="app.js?v=20260515-dashboard-confidence"></script>
   </body>
 </html>

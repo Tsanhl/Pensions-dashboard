@@ -554,7 +554,7 @@ main {
 }
 
 .metric-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   margin-bottom: 20px;
 }
 
@@ -599,6 +599,11 @@ main {
   color: #f8f7f2;
 }
 
+.metric-confidence {
+  border-color: rgba(182, 120, 31, 0.24);
+  background: linear-gradient(180deg, #fff9ef 0%, #f7fbf6 100%);
+}
+
 .panel,
 .edit-panel {
   padding: 22px;
@@ -620,6 +625,10 @@ main {
 
 .input-warning-panel {
   margin-top: 14px;
+}
+
+.demo-data-banner {
+  margin-bottom: 16px;
 }
 
 .notice-panel h5 {
@@ -1210,8 +1219,15 @@ summary:focus-visible {
   border-top: 1px solid var(--line);
 }
 
-.calculation-audit-panel .panel-heading {
-  margin-bottom: 0;
+.calculation-audit-panel summary {
+  cursor: pointer;
+  font-weight: 720;
+  list-style-position: inside;
+}
+
+.calculation-audit-head {
+  display: grid;
+  gap: 4px;
 }
 
 .calculation-audit-list .summary-row {
