@@ -271,8 +271,8 @@ const assistantQuestionGroups = {
     starterIds: ["scenario-retire-later", "scenario-raise-contributions", "scenario-pause-saving"],
   },
   learn: {
-    label: "Learn pension basics",
-    description: "Plain-English explanations of pension types, State Pension, pensionable pay and drawdown.",
+    label: "Pension basics",
+    description: "Ask the AI Assistant to explain pension terms, State Pension, pensionable pay and drawdown.",
     starterIds: ["learn-dc", "learn-state-pension", "learn-pensionable-pay", "learn-drawdown"],
   },
   planning: {
