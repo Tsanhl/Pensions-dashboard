@@ -1089,6 +1089,38 @@ summary:focus-visible {
   grid-template-columns: minmax(8.5rem, 0.72fr) minmax(0, 1.28fr);
 }
 
+.compact-assumption-list,
+.calculation-audit-list {
+  gap: 6px;
+}
+
+.compact-assumption-list .summary-row,
+.calculation-audit-list .summary-row,
+.data-confidence-list .summary-row {
+  min-height: auto;
+  align-items: flex-start;
+  gap: 14px;
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.compact-assumption-list .summary-row span,
+.calculation-audit-list .summary-row span,
+.data-confidence-list .summary-row span {
+  font-size: 0.78rem;
+  font-weight: 720;
+  line-height: 1.35;
+}
+
+.compact-assumption-list .summary-row strong,
+.calculation-audit-list .summary-row strong,
+.data-confidence-list .summary-row strong {
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 680;
+  line-height: 1.42;
+}
+
 .chart-panel canvas {
   display: block;
   width: 100%;
@@ -1266,12 +1298,27 @@ summary:focus-visible {
   gap: 4px;
 }
 
+.calculation-audit-list {
+  overflow: hidden;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
 .calculation-audit-list .summary-row {
-  align-items: flex-start;
+  border-width: 0 0 1px;
+  border-radius: 0;
+  background: #ffffff;
+  grid-template-columns: minmax(11rem, 0.34fr) minmax(0, 1fr);
+}
+
+.calculation-audit-list .summary-row:last-child {
+  border-bottom: 0;
 }
 
 .calculation-audit-list .summary-row strong {
-  max-width: 38rem;
+  max-width: 56rem;
 }
 
 .pot-row,

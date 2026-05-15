@@ -1,9 +1,9 @@
-const CACHE_NAME = "pension-portfolio-shell-v22";
+const CACHE_NAME = "pension-portfolio-shell-v23";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=20260515-final-limits",
-  "./app.js?v=20260515-final-limits",
+  "./styles.css?v=20260515-ai-layout",
+  "./app.js?v=20260515-ai-layout",
   "./manifest.webmanifest",
   "./assets/icons/icon.svg",
   "./assets/icons/icon-192.png",

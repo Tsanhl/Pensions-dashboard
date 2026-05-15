@@ -216,7 +216,7 @@ const benchmarkThresholds = {
 const titles = {
   dashboard: "Dashboard",
   finder: "Pension Record",
-  coach: "Guidance Assistant",
+  coach: "AI Assistant",
 };
 
 const assistantQuestionGroups = {
@@ -3723,7 +3723,7 @@ function getGoalLayoutConfig(projection) {
     assumptionEyebrow: "Projection assumptions",
     assumptionCopy: "Compare cautious, base and optimistic paths for the current DC record.",
     scenarioSummary: "Assistant what-if",
-    scenarioIntro: "Ask the Guidance Assistant for plain-English what-if examples instead of using a separate scenario panel.",
+    scenarioIntro: "Ask the AI Assistant for plain-English what-if examples instead of using a separate scenario panel.",
     stepTwoCopy: "These optional checks are user-entered. Add only the cash, household, adequacy or investment details that matter; the app then calculates the result from what you enter.",
     stepThreeTitle: "Compare result",
     stepThreeCopy: projection.usesIncomeMix
@@ -3904,19 +3904,6 @@ function getContributionReconciliation(projection = calculateProjection()) {
   };
 }
 
-function getContributionReconciliationExplanation(reconciliation = getContributionReconciliation()) {
-  if (reconciliation.status === "Consistent") {
-    return "Payslip and provider values appear consistent because provider total roughly equals employer + employee contribution.";
-  }
-  if (reconciliation.status === "Possible mismatch") {
-    return "Possible mismatch: provider amount does not match expected employer + employee total.";
-  }
-  if (reconciliation.status === "Needs evidence") {
-    return "Needs evidence: payslip deduction is entered but no provider total is shown.";
-  }
-  return "Not checked: enter payslip deduction and provider contribution values.";
-}
-
 function getInputWarningRows(state = appState) {
   const current = getCurrentEmploymentRecord(state);
   const rows = [];
@@ -4016,7 +4003,6 @@ function getCalculationAuditRows(projection) {
     ["Inflation and money view", `${formatPct(state.inflationPct)} inflation; ${displayProjection.moneyMode === "today" ? "today's-money display" : "nominal display"}`],
     ["Drawdown conversion", `${formatMoney(displayProjection.projectedPot)} x ${formatPct(state.drawdownPct)} = ${formatMoney(displayProjection.dcProjectedYearlyIncome)} / year`],
     ["Payslip/provider check", `Payslip says ${formatMoney(reconciliation.payslip)}; provider says ${formatMoney(reconciliation.provider)} total. Status: ${reconciliation.status}.`],
-    ["Why this status appeared", getContributionReconciliationExplanation(reconciliation)],
   ];
 
   if (displayProjection.hasPreviousDbHistory) {
@@ -4395,7 +4381,7 @@ function buildAssumptionPathModel(presetKey) {
 function seedChat() {
   addMessage(
     "coach",
-    "Guidance Assistant",
+    "AI Assistant",
     `<p>${escapeHtml(getTopicIntro(appState.assistantTopic))}</p><p>I can explain pension terms, show what changes the goal result, and suggest practical next checks from your record. Guidance only, not regulated financial advice.</p>`,
     true
   );
@@ -4415,7 +4401,7 @@ function askCoach(question, { forceAnswer = false, skipUserMessage = false } = {
 
   const projection = calculateProjection();
   const context = buildPersonalContext(topic, cleanQuestion, projection);
-  addMessage("coach", "Guidance Assistant", getCoachAnswer(cleanQuestion, context), true);
+  addMessage("coach", "AI Assistant", getCoachAnswer(cleanQuestion, context), true);
 }
 
 function addMessage(role, title, copy, html) {
@@ -8615,7 +8601,7 @@ function renderPortfolioChrome() {
     const actionMap = {
       dashboard: { label: "Open Pension Record", target: "finder" },
       finder: { label: "Retirement Goal", target: "goal" },
-      goal: { label: "Ask Guidance Assistant", target: "coach" },
+      goal: { label: "Ask AI Assistant", target: "coach" },
       coach: { label: "View Dashboard", target: "dashboard" },
     };
     const action = actionMap[currentView] || actionMap.dashboard;
@@ -8636,7 +8622,7 @@ function setView(view) {
     dashboard: "Dashboard",
     finder: "Pension Record",
     goal: "Retirement Goal",
-    coach: "Guidance Assistant",
+    coach: "AI Assistant",
   };
   els.viewTitle.textContent = viewTitles[view] || "Dashboard";
   renderPortfolioChrome();
@@ -9040,7 +9026,6 @@ function renderContributions(projection) {
     ["Payslip deduction / month", formatMoney(appState.payslipContribution)],
     ["Provider shown / month", formatMoney(appState.providerContribution)],
     ["Contribution check", `Status: ${reconciliation.status}`],
-    ["Why this status appeared", getContributionReconciliationExplanation(reconciliation)],
     ["Expected provider total", formatMoney(reconciliation.expectedProviderTotal)],
     ["Pay basis", appState.pensionablePayBasis],
   ];
@@ -9726,7 +9711,7 @@ function getLifeEventGuide(type = appState.lifeEvent?.type) {
       title: "Pick a life event to narrow the checklist.",
       checks: [
         "Choose the event you want to plan for.",
-        "Use the Guidance Assistant to ask the next practical question once the event is selected.",
+        "Use the AI Assistant to ask the next practical question once the event is selected.",
       ],
       action: "No event selected yet.",
       documents: "Employment letters, pension statements and provider messages remain the core documents.",
@@ -10073,7 +10058,6 @@ function renderAssumptionDetails(projection) {
     ["DB amount source", projection.dbSummary?.hasDb ? "User-entered scheme statement" : "Not used"],
     ["Confidence labels", "User-entered / Document-uploaded / Provider-linked / Official forecast"],
     ["Payslip/provider status", reconciliation.status],
-    ["Why status appeared", getContributionReconciliationExplanation(reconciliation)],
     ["Last checked", isDemoPortfolio(projection.state) ? "Demo only / not provider verified" : "User-entered / not provider verified"],
   ];
   renderRows(els.dataConfidenceList, confidenceRows);
@@ -10829,7 +10813,7 @@ function buildSelfSelectInvestingModel(projection) {
 	      ["Risk category", style === "aggressive" ? "Higher volatility / higher growth aim" : style === "conservative" ? "Lower volatility / more ballast" : "Balanced growth and ballast"],
 	      ["Goal gap", projection.hasGoal ? getCompactGoalStatusLine(projection) : "Enter a monthly goal to size the gap"],
 	      ["Illustrative tilt", tiltCopy],
-	      ["Assistant link", "Ask the Guidance Assistant what to check; this prototype uses built-in guidance rules, not live personalised fund advice."],
+	      ["Assistant link", "Ask the AI Assistant what to check; this prototype uses built-in guidance rules, not live personalised fund advice."],
 	    ],
     allocationRows: [
       ["Global equity", `${allocation.globalEquity}%`],
@@ -10846,10 +10830,10 @@ function buildSelfSelectInvestingModel(projection) {
 	        : "Example broad-market funds and ETFs",
 	    exampleCopy:
 	      access === "default"
-	        ? "This keeps the function practical without pushing the user into self-selecting funds. Ask the Guidance Assistant what to check before changing the default."
+	        ? "This keeps the function practical without pushing the user into self-selecting funds. Ask the AI Assistant what to check before changing the default."
 	        : access === "workplace-self-select"
-	        ? "Start with the scheme menu's lowest-cost diversified fund types. The Guidance Assistant can explain the checks in plain English; named funds and ETFs are only secondary illustrations."
-	        : "Keep the core broad, diversified, and low-cost. The Guidance Assistant can explain the checks in plain English; examples are illustrations, not personal recommendations.",
+	        ? "Start with the scheme menu's lowest-cost diversified fund types. The AI Assistant can explain the checks in plain English; named funds and ETFs are only secondary illustrations."
+	        : "Keep the core broad, diversified, and low-cost. The AI Assistant can explain the checks in plain English; examples are illustrations, not personal recommendations.",
     examples,
     disclaimer:
       "Built-in demo guidance only. This is not regulated financial advice or a personal recommendation. A live version could connect to provider and market-data APIs before showing personalised guidance.",
@@ -10876,10 +10860,10 @@ function renderSelfSelectPanel(projection) {
   if (els.selfSelectIntroCopy) {
     els.selfSelectIntroCopy.textContent =
       model.access === "default"
-        ? "Default-fund route: use the checks below first. You can also ask the Guidance Assistant what to check before changing funds."
+        ? "Default-fund route: use the checks below first. You can also ask the AI Assistant what to check before changing funds."
         : model.access === "workplace-self-select"
-          ? "Workplace self-select route: use broad fund categories first, then ask the Guidance Assistant for plain-English checks."
-          : "SIPP route: use broad fund categories first, then ask the Guidance Assistant for plain-English checks. Named examples are illustrations only.";
+          ? "Workplace self-select route: use broad fund categories first, then ask the AI Assistant for plain-English checks."
+          : "SIPP route: use broad fund categories first, then ask the AI Assistant for plain-English checks. Named examples are illustrations only.";
   }
   if (els.selfSelectExamplesSummary) els.selfSelectExamplesSummary.textContent = model.examplesSummary;
   if (els.selfSelectExampleCopy) els.selfSelectExampleCopy.textContent = model.exampleCopy;
