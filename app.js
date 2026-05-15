@@ -5017,7 +5017,7 @@ function getActionSummaryItems(context) {
     return [
       lifeGuide.action,
       `Documents: ${lifeGuide.documents}`,
-      `Ask guidance next: ${lifeGuide.aiQuestion}`,
+      `Ask AI Assistant next: ${lifeGuide.aiQuestion}`,
     ];
   }
 
@@ -5237,7 +5237,7 @@ function lifeEventAnswer(question, context) {
     boundary: "Guidance only, not legal advice or regulated financial advice.",
     context: {
       ...(context || {}),
-      actionSummary: [guide.action, `Check: ${guide.checks.join(" ")}`, `Ask guidance next: ${guide.aiQuestion}`],
+      actionSummary: [guide.action, `Check: ${guide.checks.join(" ")}`, `Ask AI Assistant next: ${guide.aiQuestion}`],
     },
   });
 }
@@ -10813,7 +10813,7 @@ function buildSelfSelectInvestingModel(projection) {
 	      ["Risk category", style === "aggressive" ? "Higher volatility / higher growth aim" : style === "conservative" ? "Lower volatility / more ballast" : "Balanced growth and ballast"],
 	      ["Goal gap", projection.hasGoal ? getCompactGoalStatusLine(projection) : "Enter a monthly goal to size the gap"],
 	      ["Illustrative tilt", tiltCopy],
-	      ["Assistant link", "Ask the AI Assistant what to check; this prototype uses built-in guidance rules, not live personalised fund advice."],
+	      ["Assistant link", "Ask the AI Assistant for checks; this prototype uses built-in guidance rules, not live personalised fund advice."],
 	    ],
     allocationRows: [
       ["Global equity", `${allocation.globalEquity}%`],
@@ -10830,10 +10830,10 @@ function buildSelfSelectInvestingModel(projection) {
 	        : "Example broad-market funds and ETFs",
 	    exampleCopy:
 	      access === "default"
-	        ? "This keeps the function practical without pushing the user into self-selecting funds. Ask the AI Assistant what to check before changing the default."
+	        ? "This keeps the function practical without pushing the user into self-selecting funds. Ask the AI Assistant to explain the result before changing the default."
 	        : access === "workplace-self-select"
-	        ? "Start with the scheme menu's lowest-cost diversified fund types. The AI Assistant can explain the checks in plain English; named funds and ETFs are only secondary illustrations."
-	        : "Keep the core broad, diversified, and low-cost. The AI Assistant can explain the checks in plain English; examples are illustrations, not personal recommendations.",
+	        ? "Start with the scheme menu's lowest-cost diversified fund types. The AI Assistant can explain the result; named funds and ETFs are only secondary illustrations."
+	        : "Keep the core broad, diversified, and low-cost. The AI Assistant can explain the result; examples are illustrations, not personal recommendations.",
     examples,
     disclaimer:
       "Built-in demo guidance only. This is not regulated financial advice or a personal recommendation. A live version could connect to provider and market-data APIs before showing personalised guidance.",
@@ -10860,10 +10860,10 @@ function renderSelfSelectPanel(projection) {
   if (els.selfSelectIntroCopy) {
     els.selfSelectIntroCopy.textContent =
       model.access === "default"
-        ? "Default-fund route: use the checks below first. You can also ask the AI Assistant what to check before changing funds."
+        ? "Default-fund route: use the checks below first. Ask the AI Assistant for checks."
         : model.access === "workplace-self-select"
-          ? "Workplace self-select route: use broad fund categories first, then ask the AI Assistant for plain-English checks."
-          : "SIPP route: use broad fund categories first, then ask the AI Assistant for plain-English checks. Named examples are illustrations only.";
+          ? "Workplace self-select route: use broad fund categories first, then ask the AI Assistant for checks."
+          : "SIPP route: use broad fund categories first, then ask the AI Assistant for checks. Named examples are illustrations only.";
   }
   if (els.selfSelectExamplesSummary) els.selfSelectExamplesSummary.textContent = model.examplesSummary;
   if (els.selfSelectExampleCopy) els.selfSelectExampleCopy.textContent = model.exampleCopy;
