@@ -223,12 +223,12 @@ const assistantQuestionGroups = {
   joining: {
     label: "Joining",
     description: "Automatic enrolment, joining rights, worker status and postponement.",
-    starterIds: ["ae-rights", "worker-status", "postponement-backdating"],
+    starterIds: ["ae-rights", "worker-status", "postponement-backdating", "directors-contractors"],
   },
   contributions: {
     label: "Contributions",
     description: "Understand employer payments, your payments, pay basis and missing-money checks.",
-    starterIds: ["minimum-contributions", "pay-definition", "late-missing-contributions"],
+    starterIds: ["minimum-contributions", "pay-definition", "late-missing-contributions", "contribution-changes"],
   },
   "opt-out": {
     label: "Opt-out",
@@ -268,7 +268,7 @@ const assistantQuestionGroups = {
   scenario: {
     label: "What-if scenarios",
     description: "Test retirement age, higher contributions, pauses, lower earnings or cash-to-pension choices.",
-    starterIds: ["scenario-retire-later", "scenario-raise-contributions", "scenario-pause-saving"],
+    starterIds: ["scenario-retire-later", "scenario-raise-contributions", "scenario-pause-saving", "scenario-lower-earnings"],
   },
   learn: {
     label: "Pension basics",
@@ -304,6 +304,41 @@ const assistantQuestionGroups = {
     label: "Common model answers",
     description: "High-demand employee questions across the most common pension disputes.",
     starterIds: ["scheme-change", "missing-contributions", "employer-contributions"],
+  },
+  transfers: {
+    label: "Transfers/scams",
+    description: "Transfer rights, consolidation, DB/safeguarded advice boundaries and scam checks.",
+    starterIds: ["transfer-consolidation", "db-transfer", "transfer-scams", "scams"],
+  },
+  tax: {
+    label: "Tax/salary sacrifice",
+    description: "Tax relief, net pay, relief at source, salary sacrifice and pension allowances.",
+    starterIds: ["tax-relief-check", "salary-sacrifice-check", "allowance-check", "tax-salary-sacrifice"],
+  },
+  investments: {
+    label: "Investments/charges",
+    description: "Default fund, charges, trustee investment duties, ESG and investment-loss complaints.",
+    starterIds: ["dc-investment", "charges", "trustee-investment"],
+  },
+  "retirement-access": {
+    label: "Taking benefits",
+    description: "Access age, tax-free cash, drawdown, annuity, ill-health and retirement-option checks.",
+    starterIds: ["retirement-access-expanded", "drawdown-tax-free-cash", "ill-health", "retirement-state-pension-age"],
+  },
+  "public-sector": {
+    label: "Public sector",
+    description: "Public-service schemes, McCloud, LGPS/NHS/Teachers issues, outsourcing and ill-health rules.",
+    starterIds: ["public-sector", "public-sector-mccloud", "public-sector-ill-health", "public-sector-outsourcing"],
+  },
+  leaving: {
+    label: "Leaving work",
+    description: "Redundancy, dismissal, resignation, notice, settlement agreements and pension-loss checks.",
+    starterIds: ["redundancy-leaving", "leaving-notice-contributions", "leaving-settlement-pension-loss"],
+  },
+  "self-employed": {
+    label: "Self-employed",
+    description: "Sole trader or freelancer planning, no employer contribution and State Pension checks.",
+    starterIds: ["self-employed", "self-employed-ni", "self-employed-contributions"],
   },
 };
 
@@ -917,6 +952,78 @@ const personalAppQuestionLibrary = [
     category: "Couple planning",
     question: "What survivor or dependant pension details should we review as a couple?",
     label: "Survivor checklist",
+  },
+  {
+    id: "tax-relief-check",
+    category: "Tax",
+    question: "How does pension tax relief work for my contributions?",
+    label: "Tax relief",
+  },
+  {
+    id: "salary-sacrifice-check",
+    category: "Tax",
+    question: "Should I worry about salary sacrifice, take-home pay or minimum wage?",
+    label: "Salary sacrifice",
+  },
+  {
+    id: "allowance-check",
+    category: "Tax",
+    question: "Could annual allowance or money purchase annual allowance affect me?",
+    label: "Allowances",
+  },
+  {
+    id: "drawdown-tax-free-cash",
+    category: "Retirement",
+    question: "Can I use drawdown or take tax-free cash?",
+    label: "Drawdown and cash",
+  },
+  {
+    id: "retirement-state-pension-age",
+    category: "Retirement",
+    question: "How does State Pension age fit with taking my private pension?",
+    label: "State Pension age",
+  },
+  {
+    id: "public-sector-mccloud",
+    category: "Public sector",
+    question: "How do McCloud, remedy statements and service dates affect me?",
+    label: "McCloud remedy",
+  },
+  {
+    id: "public-sector-ill-health",
+    category: "Public sector",
+    question: "Can I take ill-health or flexible retirement from a public-sector scheme?",
+    label: "Ill-health retirement",
+  },
+  {
+    id: "public-sector-outsourcing",
+    category: "Public sector",
+    question: "What happens to my public-sector pension if my job is outsourced?",
+    label: "Outsourcing",
+  },
+  {
+    id: "leaving-notice-contributions",
+    category: "Leaving work",
+    question: "Do pension contributions continue during notice, garden leave or PILON?",
+    label: "Notice contributions",
+  },
+  {
+    id: "leaving-settlement-pension-loss",
+    category: "Leaving work",
+    question: "Should I check pension loss before signing a settlement agreement?",
+    label: "Settlement pension loss",
+  },
+  {
+    id: "self-employed-ni",
+    category: "Self-employed",
+    question: "As self-employed, what should I check on State Pension and National Insurance?",
+    label: "NI and State Pension",
+  },
+  {
+    id: "self-employed-contributions",
+    category: "Self-employed",
+    question: "As self-employed, how should I think about private pension contributions?",
+    label: "Private contributions",
   },
 ];
 
@@ -4143,7 +4250,20 @@ function getQuestionGroupKey(item) {
     "scheme-change": "employer-change",
     ppf: "db-rights",
     "funding-insolvency": "db-rights",
-    "public-sector": "equality",
+    "public-sector": "public-sector",
+    "transfer-consolidation": "transfers",
+    "db-transfer": "transfers",
+    "transfer-scams": "transfers",
+    scams: "transfers",
+    "tax-salary-sacrifice": "tax",
+    "dc-investment": "investments",
+    charges: "investments",
+    "trustee-investment": "investments",
+    "retirement-access": "retirement-access",
+    "retirement-access-expanded": "retirement-access",
+    "ill-health": "retirement-access",
+    "redundancy-leaving": "leaving",
+    "self-employed": "self-employed",
     complaints: "complaints",
     "can-i-enforce": "complaints",
     "death-benefits": "leave",
@@ -4184,7 +4304,7 @@ function getQuestionGroupKey(item) {
     Contributions: "contributions",
     Payroll: "contributions",
     "Pay basis": "contributions",
-    "DC checks": "contributions",
+    "DC checks": "investments",
     "Opt-out": "opt-out",
     "Employer change": "employer-change",
     "DB/accrued rights": "db-rights",
@@ -4192,7 +4312,7 @@ function getQuestionGroupKey(item) {
     "Employer insolvency": "db-rights",
     "Scheme funding": "db-rights",
     Equality: "equality",
-    "Public sector": "equality",
+    "Public sector": "public-sector",
     Leave: "leave",
     TUPE: "tupe",
     "Employment transfer": "tupe",
@@ -4203,11 +4323,14 @@ function getQuestionGroupKey(item) {
     Learn: "learn",
     Fundamentals: "learn",
     "State Pension": "learn",
-    Transfers: "learn",
-    Retirement: "learn",
-    "Retirement choices": "learn",
-    Tax: "contributions",
-    "DC investment": "learn",
+    Transfers: "transfers",
+    Retirement: "retirement-access",
+    "Retirement choices": "retirement-access",
+    Tax: "tax",
+    "DC investment": "investments",
+    Trustees: "investments",
+    "Leaving work": "leaving",
+    "Self-employed": "self-employed",
     Planning: "planning",
     "Risk pathways": "risk-pathways",
     "Life events": "life-events",
@@ -4507,6 +4630,45 @@ function getBaseFactsForTopic(topic, projection) {
       ["Projected income", formatMoney(projection.displayProjectedYearlyIncome)],
       ["Gap", (projection.displayGap ?? projection.gap) > 0 ? `${formatMoney(projection.displayGap ?? projection.gap)} short/year` : `${formatMoney(Math.abs(projection.displayGap ?? projection.gap))} above/year`],
     ],
+    transfers: [
+      ...commonFacts,
+      ["Current private wealth", formatMoney(projection.currentPrivateWealth)],
+      ["Deferred pots", String(appState.deferredPots?.length || 0)],
+    ],
+    tax: [
+      ...commonFacts,
+      ["Tax-relief mode", appState.taxReliefMode],
+      ["Marginal tax rate", formatPct(appState.marginalTaxRate)],
+      ["Employee contribution", formatPct(appState.employeeContributionPct)],
+    ],
+    investments: [
+      ...commonFacts,
+      ["Current pot", formatMoney(appState.currentPot)],
+      ["Growth assumption", formatPct(appState.growthPct)],
+      ["Annual charge", formatPct(appState.annualChargePct)],
+    ],
+    "retirement-access": [
+      ...commonFacts,
+      ["Current age", String(appState.age)],
+      ["Retirement age", String(appState.retireAge)],
+      ["Drawdown assumption", formatPct(appState.drawdownPct)],
+      ["State Pension forecast", formatMoney(appState.statePension)],
+    ],
+    "public-sector": [
+      ...commonFacts,
+      ["Selected life event", getLifeEventLabel()],
+    ],
+    leaving: [
+      ...commonFacts,
+      ["Selected life event", getLifeEventLabel()],
+      ["Current pot", formatMoney(appState.currentPot)],
+    ],
+    "self-employed": [
+      ...commonFacts,
+      ["Annual income", formatMoney(appState.salary)],
+      ["State Pension forecast", formatMoney(appState.statePension)],
+      ["Emergency savings", formatMoney(appState.emergencySavings)],
+    ],
   };
 
   return topicFacts[topic] || commonFacts;
@@ -4569,6 +4731,33 @@ function buildTopicContextSummary(topic, projection, topicFacts) {
         ? `${formatMoney(projection.displayGap ?? projection.gap)} short/year`
         : `${formatMoney(Math.abs(projection.displayGap ?? projection.gap))} above target`
     }. ${factText}`,
+    transfers: `The record currently shows ${getPlanLabel().toLowerCase()}, current private wealth of ${formatMoney(
+      projection.currentPrivateWealth
+    )}, and ${appState.deferredPots?.length || 0} deferred pot record${(appState.deferredPots?.length || 0) === 1 ? "" : "s"}. ${
+      factText || "Use this topic for transfer rights, consolidation, DB safeguards and scam checks."
+    }`,
+    tax: `The record uses ${appState.taxReliefMode} tax-relief mode, ${formatPct(appState.marginalTaxRate)} marginal tax rate, and ${formatPct(
+      appState.employeeContributionPct
+    )} employee contribution. ${factText || "Use this topic for tax relief, salary sacrifice, allowances and access tax warnings."}`,
+    investments: `The record shows a current pot of ${formatMoney(appState.currentPot)}, ${formatPct(appState.growthPct)} growth assumption and ${formatPct(
+      appState.annualChargePct
+    )} annual charge assumption. ${factText || "Use this topic for default fund, charges, investment governance and complaint checks."}`,
+    "retirement-access": `The record uses age ${appState.age}, retirement age ${appState.retireAge}, a ${formatPct(
+      appState.drawdownPct
+    )} drawdown assumption and State Pension forecast of ${formatMoney(appState.statePension)} per year. ${
+      factText || "Use this topic for tax-free cash, drawdown, annuity, early/late retirement and ill-health checks."
+    }`,
+    "public-sector": `The record currently shows ${getPlanLabel().toLowerCase()} and ${appState.schemeName || "scheme not entered"}. ${
+      factText || "Use this topic for public-service remedy, LGPS/NHS/Teachers style checks, outsourcing and ill-health questions."
+    }`,
+    leaving: `The record concern is ${appState.mainConcern}. ${
+      factText || "Use this topic for redundancy, dismissal, resignation, notice, settlement agreements and pension-loss checks."
+    }`,
+    "self-employed": `The record shows annual income of ${formatMoney(appState.salary)}, State Pension forecast of ${formatMoney(
+      appState.statePension
+    )} per year and emergency savings of ${formatMoney(appState.emergencySavings)}. ${
+      factText || "Use this topic for sole trader or freelancer pension planning without employer automatic-enrolment contributions."
+    }`,
   };
 
   return contextByTopic[topic] || contextByTopic["common-model"];
@@ -4655,6 +4844,41 @@ function buildVerificationList(topic) {
       "Check the contract, scheme rules and provider record against the exact question.",
       "Pin the issue to a date, document and decision-maker before treating the answer as settled.",
     ],
+    transfers: [
+      "Check whether the pension is DC, DB, safeguarded or has guarantees before moving it.",
+      "Check charges, protected pension age, exit penalties, scam flags and receiving-scheme details.",
+      "Do not treat consolidation as safe until DB or safeguarded-benefit advice boundaries are ruled out.",
+    ],
+    tax: [
+      "Check whether contributions use net pay, relief at source or salary sacrifice.",
+      "Check whether salary sacrifice affects statutory pay, National Minimum Wage, benefits or borrowing.",
+      "Check annual allowance, money purchase annual allowance and tax-charge risks before large changes.",
+    ],
+    investments: [
+      "Check the default fund, lifestyling target date, charges and transaction costs.",
+      "Separate normal market loss from maladministration, poor disclosure or late investment of contributions.",
+      "Use regulated advice for personal fund choice rather than relying on the prototype.",
+    ],
+    "retirement-access": [
+      "Check tax rules and scheme rules before assuming pension money can be accessed.",
+      "Check whether early retirement, drawdown, annuity, tax-free cash or ill-health rules apply.",
+      "Treat the drawdown rate as an illustration, not a provider forecast or recommendation.",
+    ],
+    "public-sector": [
+      "Check the exact scheme, service dates and remedy-period status.",
+      "Check whether McCloud, outsourcing/Fair Deal, ill-health, abatement or flexible-retirement rules are involved.",
+      "Use the scheme's own guide because public-service pension rules are scheme-specific.",
+    ],
+    leaving: [
+      "Check whether the person is resigning, redundant, dismissed, on notice or settling a claim.",
+      "Check whether notice pay, PILON, garden leave or redundancy pay is pensionable.",
+      "Do not waive pension-loss claims in a settlement agreement without advice.",
+    ],
+    "self-employed": [
+      "Check that there is no employer automatic-enrolment duty because the person is genuinely self-employed.",
+      "Check State Pension forecast and National Insurance record separately from private pension saving.",
+      "Use affordability, tax relief and emergency savings before deciding a contribution level.",
+    ],
   };
 
   return [...(topicChecks[topic] || topicChecks["common-model"])].filter(Boolean).slice(0, 5);
@@ -4679,6 +4903,13 @@ function buildEscalationNote(topic) {
     "life-events": "Ask payroll, the provider or trustees for the event-specific pension calculation in writing. Use specialist advice if the event affects DB rights, divorce sharing, illness retirement or survivor benefits.",
     household: "Use regulated advice or legal help if couple planning turns into beneficiary disputes, divorce, DB transfer choices or tax-heavy retirement planning.",
     "common-model": "Start with the organisation that made the decision, then move to the appropriate complaints or regulatory route once the documents are pinned down.",
+    transfers: "Use regulated advice for DB or safeguarded-benefit transfers and pause any transfer with scam warnings or unclear receiving-scheme details.",
+    tax: "Use tax or regulated financial advice before salary sacrifice, large contributions, allowance planning or pension access decisions.",
+    investments: "Use regulated financial advice for fund selection. Use provider, trustee or complaint routes where the issue is charges, disclosure or administration.",
+    "retirement-access": "Use Pension Wise, MoneyHelper or regulated financial advice before drawdown, annuity, tax-free cash, DB transfer or major access decisions.",
+    "public-sector": "Use the scheme administrator first, then specialist advice for McCloud, ill-health, abatement, outsourcing or large benefit disputes.",
+    leaving: "Use employment or pensions advice before signing a settlement agreement or waiving pension-related claims.",
+    "self-employed": "Use MoneyHelper, tax guidance or regulated advice if contribution levels, tax relief or State Pension gaps materially affect the plan.",
   };
 
   return notes[topic] || notes["common-model"];
@@ -4823,51 +5054,40 @@ function scenarioAnswer(question, projection, context) {
     ...((context?.verification || []).slice(0, 2)),
   ]
     .filter(Boolean)
-    .slice(0, 5)
-    .map((item) => `<li>${escapeHtml(item)}</li>`)
-    .join("");
+    .slice(0, 5);
   const usedFacts = [
     ...(context?.usedFacts || []),
     `Scenario tested: ${scenarioProjection.label}`,
     `Scenario projected income: ${formatMoney(scenarioMonthly)} per month`,
     `Scenario projected pot: ${formatMoney(scenarioProjection.projectedPot)}`,
-  ]
-    .map((item) => `<li>${escapeHtml(item)}</li>`)
-    .join("");
+  ];
 
-  return `
-    <div class="answer-block legal-answer">
-      <span class="answer-label">Scenario modelling</span>
-      <p><strong>Direct answer:</strong> ${escapeHtml(
-        `On current assumptions, ${scenarioProjection.label.toLowerCase()} changes the projection from about ${formatMoney(currentMonthly)} to ${formatMoney(
-          scenarioMonthly
-        )} per month at retirement.${planCaution}`
-      )}</p>
-      <p><strong>Scenario tested:</strong> ${escapeHtml(scenarioProjection.label)}</p>
-      <p><strong>How your record affects this:</strong> ${escapeHtml(
-        `${context?.summary || personalApplicationSummary(context)} Coverage moves by ${Math.abs(coverageDiff)} percentage point${Math.abs(coverageDiff) === 1 ? "" : "s"}.`
-      )}</p>
-      <p><strong>Long-term effect of the short-term choice:</strong></p>
-      <ul class="verify-list">${comparisonItems.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-      <p><strong>What to verify next:</strong></p>
-      <ul class="verify-list">${verifyItems}</ul>
-      <p><strong>Documents to check:</strong></p>
-      <ul>
-        <li>Latest provider statement</li>
-        <li>Recent payslip or contribution record</li>
-        <li>Retirement target working</li>
-        <li>Charge and investment summary</li>
-      </ul>
-      <div class="answer-meta">
-        <strong>Used from your record</strong>
-        <ul class="used-facts-list">${usedFacts}</ul>
-      </div>
-      <p><strong>Escalation/help route:</strong> ${escapeHtml(
-        context?.escalation || "Use regulated financial advice before acting on a major change to retirement timing, contributions, or access choices."
-      )}</p>
-      <p><strong>Boundary:</strong> Financial guidance only, not regulated financial advice.</p>
-    </div>
-  `;
+  return structuredAnswer({
+    label: "Scenario modelling",
+    answer: `On current assumptions, ${scenarioProjection.label.toLowerCase()} changes the projection from about ${formatMoney(currentMonthly)} to ${formatMoney(
+      scenarioMonthly
+    )} per month at retirement.${planCaution}`,
+    pensionType: "Illustrative scenario modelling using the current projection assumptions.",
+    action: `Scenario tested: ${scenarioProjection.label}. ${scenarioProjection.shortEffect}`,
+    basis: `Same current record and assumptions, adjusted only for the scenario. ${scenarioProjection.assumptions.join(" ")}`,
+    application: `${context?.summary || personalApplicationSummary(context)} Coverage moves by ${Math.abs(coverageDiff)} percentage point${
+      Math.abs(coverageDiff) === 1 ? "" : "s"
+    }.`,
+    conclusion: comparisonItems.join(" "),
+    documents: ["latest provider statement", "recent payslip or contribution record", "retirement target working", "charge and investment summary"],
+    help: context?.escalation || "Use regulated financial advice before acting on a major change to retirement timing, contributions, or access choices.",
+    boundary: "Financial guidance only, not regulated financial advice.",
+    context: {
+      ...(context || {}),
+      actionSummary: [
+        `Current path: about ${formatMoney(currentMonthly)} per month.`,
+        `Scenario path: about ${formatMoney(scenarioMonthly)} per month.`,
+        "Re-run the scenario on the Retirement Goal page before acting.",
+      ],
+      verification: verifyItems,
+      usedFacts,
+    },
+  });
 }
 
 function riskPathwayAnswer(question, projection, context) {
@@ -5340,6 +5560,73 @@ function householdAnswer(question, projection, context) {
   });
 }
 
+function getTopicCoverageDocuments(topic) {
+  const topicDocuments = {
+    joining: ["auto-enrolment letter", "contract or worker-status documents", "payslips", "postponement notice"],
+    contributions: ["latest payslip", "provider contribution history", "scheme contribution basis", "payroll calculation"],
+    "opt-out": ["opt-out notice", "provider opt-out confirmation", "employer messages", "re-enrolment letter"],
+    "employer-change": ["scheme rules", "amendment deed", "consultation notice", "old/new benefit comparison"],
+    "db-rights": ["scheme booklet", "trust deed and rules", "benefit statement", "actuarial comparison"],
+    equality: ["benefit statement", "equalisation notice", "GMP statement", "public-sector remedy statement"],
+    leave: ["family leave policy", "absence records", "payslips before and during leave", "scheme booklet"],
+    tupe: ["TUPE consultation papers", "old/new pension comparison", "measure statement", "Fair Deal documents if public sector"],
+    complaints: ["timeline", "complaint letters", "final response", "scheme rules", "calculation request"],
+    scenario: ["latest statement", "retirement age assumption", "target-income working", "affordability note"],
+    learn: ["scheme booklet", "latest statement", "provider glossary", "State Pension forecast"],
+    planning: ["retirement target note", "latest statement", "emergency-savings figure", "State Pension forecast"],
+    "risk-pathways": ["payslips for each job", "auto-enrolment assessment", "opt-in request", "provider contribution history"],
+    "life-events": ["life-event date note", "employer policy", "provider statement", "beneficiary or nomination form"],
+    household: ["partner pension statement", "joint target note", "expression-of-wish forms", "survivor benefit wording"],
+    "common-model": ["contract", "scheme rules", "provider record", "payslips", "decision notice"],
+    transfers: ["transfer pack", "charges summary", "guarantee/protected-age wording", "receiving scheme details", "scam warning records"],
+    tax: ["payslips", "tax-relief method", "salary sacrifice agreement", "pension savings statement", "allowance/tax-charge notice"],
+    investments: ["fund factsheet", "charges summary", "default investment strategy", "statement of investment principles", "transaction cost disclosure"],
+    "retirement-access": ["retirement options pack", "scheme pension age rule", "tax-free cash quote", "drawdown charges", "ill-health decision"],
+    "public-sector": ["scheme guide", "remedy statement", "service record", "retirement quote", "ill-health or abatement decision"],
+    leaving: ["notice letter", "settlement agreement", "scheme booklet", "payslips", "benefit/leaver statement"],
+    "self-employed": ["personal pension statement", "State Pension forecast", "National Insurance record", "tax return", "budget/affordability note"],
+  };
+
+  return topicDocuments[topic] || topicDocuments["common-model"];
+}
+
+function topicCoverageAnswer(question, projection, context) {
+  const topic = context?.topic || appState.assistantTopic;
+  const group = assistantQuestionGroups[topic];
+  if (!group) return null;
+
+  const starterItems = (group.starterIds || [])
+    .map((id) => getQuestionById(id))
+    .filter(Boolean)
+    .slice(0, 4);
+  const suggestedChecks = starterItems.map((item) => `${item.label}: ${item.question}`);
+  const text = normalizeAssistantText(question || "");
+  const broadPrompt = !text || matchesAny(text, ["help", "overview", "what can i ask", "what questions", "what do you cover", "what can you answer", "explain this topic", "not sure"]);
+
+  return structuredAnswer({
+    label: `${group.label} coverage`,
+    answer: broadPrompt
+      ? "This topic can handle several common checks. Choose one specific issue for a clearer answer."
+      : "I do not have a precise built-in rule for that exact wording, but this topic still has a structured coverage route for the nearest checks.",
+    pensionType: `${group.label} topic in the AI Assistant prototype.`,
+    action: "Turn the broad question into a specific check about eligibility, calculation, document wording, provider record, employer act or next step.",
+    basis:
+      "The fallback uses the selected topic, built-in rule library, current pension record and default verification checks. It is designed to avoid a dead-end when the user's wording is broad or unusual.",
+    application: context?.summary || personalApplicationSummary(context),
+    conclusion: suggestedChecks.length
+      ? `Useful default checks include: ${suggestedChecks.join(" | ")}.`
+      : `Use this topic for: ${group.description}`,
+    documents: getTopicCoverageDocuments(topic),
+    help: buildEscalationNote(topic),
+    boundary: "Guidance only. This prototype does not provide legal advice, regulated financial advice, provider verification or a formal actuarial forecast.",
+    context: {
+      ...(context || {}),
+      actionSummary: suggestedChecks.slice(0, 3),
+      verification: buildVerificationList(topic),
+    },
+  });
+}
+
 function getCoachAnswer(question, context) {
   const q = normalizeAssistantText(question);
   const projection = context?.projection || calculateProjection();
@@ -5402,6 +5689,9 @@ function getCoachAnswer(question, context) {
       context,
     });
   }
+
+  const topicReply = topicCoverageAnswer(question, projection, context);
+  if (topicReply) return topicReply;
 
   return financeGuidance(
     "Personal record summary",
@@ -5704,7 +5994,7 @@ function getEnhancedDocumentList(documents, context, riskFlags) {
 function getAssistantDetailSummary(context, riskFlags) {
   const text = normalizeAssistantText(context?.question || appState.lastAssistantQuestion || "");
   const legalOrTechnical =
-    ["employer-change", "db-rights", "equality", "tupe", "complaints", "leave"].includes(context?.topic) ||
+    ["employer-change", "db-rights", "equality", "tupe", "complaints", "leave", "transfers", "tax", "investments", "retirement-access", "public-sector", "leaving"].includes(context?.topic) ||
     riskFlags.some((flag) => ["db-rule", "transfer-advice", "missing-employer"].includes(flag.key)) ||
     matchesAny(text, ["legal", "law", "allowed", "rights", "gmp", "barber", "tupe", "complaint", "ombudsman", "can my employer"]);
   return legalOrTechnical ? "Legal/technical basis and documents" : "Basis and documents";
