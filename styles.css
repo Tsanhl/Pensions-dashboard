@@ -613,6 +613,15 @@ main {
   background: #f6faf7;
 }
 
+.notice-warning {
+  border-color: rgba(161, 109, 27, 0.28);
+  background: #fff8ec;
+}
+
+.input-warning-panel {
+  margin-top: 14px;
+}
+
 .notice-panel h5 {
   margin: 0;
   font-size: 1rem;
@@ -803,6 +812,13 @@ label {
   font-size: 0.83rem;
   color: var(--muted);
   font-weight: 650;
+}
+
+.field-hint {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 520;
+  line-height: 1.35;
 }
 
 input[type="number"],
@@ -1023,6 +1039,11 @@ summary:focus-visible {
   line-height: 1.35;
 }
 
+.compact-assumption-list .summary-row,
+.calculation-audit-list .summary-row {
+  grid-template-columns: minmax(8.5rem, 0.72fr) minmax(0, 1.28fr);
+}
+
 .chart-panel canvas {
   display: block;
   width: 100%;
@@ -1179,6 +1200,26 @@ summary:focus-visible {
 
 .projection-detail-list {
   margin-top: 14px;
+}
+
+.calculation-audit-panel {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.calculation-audit-panel .panel-heading {
+  margin-bottom: 0;
+}
+
+.calculation-audit-list .summary-row {
+  align-items: flex-start;
+}
+
+.calculation-audit-list .summary-row strong {
+  max-width: 38rem;
 }
 
 .pot-row,
@@ -2148,6 +2189,11 @@ body[data-nav-style="bottom"] .message {
   .projection-status-row,
   .pot-row,
   .record-row {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-assumption-list .summary-row,
+  .calculation-audit-list .summary-row {
     grid-template-columns: 1fr;
   }
 

@@ -3245,7 +3245,8 @@ function getAnnualNetGrowthPct(state = appState) {
 }
 
 function getProjectionMonthlyRate(state = appState) {
-  return getAnnualNetGrowthPct(state) / 100 / 12;
+  const annualRate = getAnnualNetGrowthPct(state) / 100;
+  return annualRate <= -0.999999 ? -0.999999 : (1 + annualRate) ** (1 / 12) - 1;
 }
 
 function getAnnualFactor(percent, years) {
@@ -3388,6 +3389,7 @@ function buildProjectionResult(state, series, extras = {}) {
     gap,
     inflationFactor,
     moneyMode,
+    monthlyRate: series.monthlyRate,
     displayFactor: moneyMode === "today" ? 1 / inflationFactor : 1,
     displayProjectedYearlyIncome: moneyMode === "today" ? projectedYearlyIncome / inflationFactor : projectedYearlyIncome,
     displayTargetYearlyIncome: moneyMode === "today" ? enteredTargetYearlyIncome : targetYearlyIncome,
@@ -3878,13 +3880,147 @@ function renderRows(target, rows) {
   target.innerHTML = renderRowsMarkup(rows);
 }
 
+function getContributionReconciliation(projection = calculateProjection()) {
+  const current = getCurrentEmploymentRecord(projection.state);
+  const payslip = Math.max(0, toNumber(current?.payslipContribution ?? projection.state.payslipContribution));
+  const provider = Math.max(0, toNumber(current?.providerContribution ?? projection.state.providerContribution));
+  const expectedProviderTotal =
+    normalizeEmploymentType(current?.employmentType || projection.state.employmentType) === "self"
+      ? payslip
+      : payslip + projection.employerMonthly;
+  const difference = provider - expectedProviderTotal;
+  let status = "Not checked";
+
+  if (payslip > 0 || provider > 0) {
+    status = Math.abs(difference) < 2 ? "Consistent" : provider === 0 ? "Needs evidence" : "Possible mismatch";
+  }
+
+  return {
+    payslip,
+    provider,
+    expectedProviderTotal,
+    difference,
+    status,
+  };
+}
+
+function getInputWarningRows(state = appState) {
+  const current = getCurrentEmploymentRecord(state);
+  const rows = [];
+
+  if (toNumber(state.retireAge) <= toNumber(state.age)) {
+    rows.push(["Retirement age", "Retirement age must be above current age before the projection is meaningful."]);
+  }
+  if (toNumber(current?.annualIncome ?? state.salary) <= 0 && currentRecordSupportsDcProjection(state)) {
+    rows.push(["Salary", "Enter positive earnings before relying on contribution examples."]);
+  }
+  if (toNumber(state.statePensionAge) < 60 || toNumber(state.statePensionAge) > 75) {
+    rows.push(["State Pension age", "Use a State Pension age between 60 and 75, then check the official forecast."]);
+  }
+  if (toNumber(state.drawdownPct) > 6) {
+    rows.push(["Drawdown", "The drawdown percentage is high for a simple planning illustration; treat the income result cautiously."]);
+  }
+  if (getAnnualNetGrowthPct(state) < 0) {
+    rows.push(["Growth and charges", "Charges exceed the growth assumption, so the model compounds a negative net return."]);
+  }
+
+  return rows;
+}
+
+function renderInputWarningPanel(projection) {
+  if (!els.inputWarningPanel || !els.inputWarningList) return;
+  const rows = getInputWarningRows(projection.state);
+  els.inputWarningPanel.hidden = rows.length === 0;
+  els.inputWarningList.innerHTML = rows.length ? renderRowsMarkup(rows) : "";
+}
+
+function getSecondJobProjectionWarning(state = appState) {
+  const current = getCurrentEmploymentRecord(state);
+  if (!current || (!current.secondJobEnabled && current.employmentType !== "multiple")) return "";
+  return "Job 2 is checked for workplace-pension rights only. It is not included in the main DC pot projection unless you add its pension contribution into the main current record.";
+}
+
+function renderProjectionBoundaryWarning(projection) {
+  if (!els.secondJobBoundaryWarning || !els.secondJobBoundaryCopy) return;
+  const warning = getSecondJobProjectionWarning(projection.state);
+  els.secondJobBoundaryWarning.hidden = !warning;
+  els.secondJobBoundaryCopy.textContent = warning;
+}
+
+function getCalculationAuditRows(projection) {
+  if (projection.isBlocked) {
+    return [
+      ["Projection status", "Blocked until the current arrangement is confirmed."],
+      ["Model boundary", "Simplified planning projection: not an actuarial forecast, provider forecast, or regulated retirement-income recommendation."],
+    ];
+  }
+
+  const displayProjection = projection.usesIncomeMix
+    ? getIncomeMixDisplayProjection(projection)
+    : hasMixedHistoryGoalView(projection)
+      ? getAgeSeriesDisplayProjection(projection)
+      : projection;
+  const state = displayProjection.state;
+  const current = getCurrentEmploymentRecord(state);
+  if (!displayProjection.hasDcAssets && displayProjection.usesIncomeMix) {
+    const rows = [
+      ["Model boundary", "Simplified planning projection: not an actuarial forecast, provider forecast, or regulated retirement-income recommendation."],
+      ["Arrangement", getPlanLabel(displayProjection.currentType)],
+      ["Money view", displayProjection.moneyMode === "today" ? "Today's-money display" : "Nominal display"],
+    ];
+    if (displayProjection.dbSummary?.hasDb) {
+      rows.push(["DB boundary", "Uses the entered statement amount, scheme age and optional revaluation/indexation fields; it does not model commutation, GMP, survivor benefits or scheme-specific actuarial factors."]);
+    }
+    if (displayProjection.hasStatePensionForecast) {
+      rows.push(["State Pension input", "Enter the current annual forecast in today's money. The app uprates it only for nominal display."]);
+    }
+    rows.push(["Benchmark caveat", "Retirement Living Standards are spending benchmarks; compare with tax-adjusted income before treating adequacy as settled."]);
+    return rows;
+  }
+
+  const contributionBase = getAnnualContributionBase(state);
+  const monthlyBase = contributionBase / 12;
+  const employerMonthly = monthlyBase * (toNumber(state.employerContributionPct) / 100);
+  const employeeMonthly = monthlyBase * (toNumber(state.employeeContributionPct) / 100);
+  const reconciliation = getContributionReconciliation(displayProjection);
+  const rows = [
+    ["Model boundary", "Simplified planning projection: not an actuarial forecast, provider forecast, or regulated retirement-income recommendation."],
+    ["Current salary", formatMoney(toNumber(state.salary))],
+    ["Pay basis", normalizePensionablePayBasis(state.pensionablePayBasis)],
+    ["Qualifying-earnings base", `${formatMoney(contributionBase)} / year; ${formatMoney(monthlyBase)} / month`],
+    ["Employer contribution", `${formatPct(state.employerContributionPct)} = ${formatMoney(employerMonthly)} / month`],
+    ["Employee contribution", `${formatPct(state.employeeContributionPct)} = ${formatMoney(employeeMonthly)} / month before tax-relief/user-cost adjustment`],
+    ["Growth / charge / net", `${formatPct(state.growthPct)} / ${formatPct(state.annualChargePct)} / ${formatPct(displayProjection.netGrowthPct)} per year`],
+    ["Effective monthly net growth", formatPct(displayProjection.monthlyRate * 100)],
+    ["Inflation and money view", `${formatPct(state.inflationPct)} inflation; ${displayProjection.moneyMode === "today" ? "today's-money display" : "nominal display"}`],
+    ["Drawdown conversion", `${formatMoney(displayProjection.projectedPot)} x ${formatPct(state.drawdownPct)} = ${formatMoney(displayProjection.dcProjectedYearlyIncome)} / year`],
+    ["Payslip/provider check", `Payslip says ${formatMoney(reconciliation.payslip)}; provider says ${formatMoney(reconciliation.provider)} total. Status: ${reconciliation.status}.`],
+  ];
+
+  if (displayProjection.hasPreviousDbHistory) {
+    rows.push(["Previous DB boundary", "Previous DB income is added as statement income; it is not an actuarial DB calculator."]);
+  }
+  if (displayProjection.hasStatePensionForecast) {
+    rows.push(["State Pension input", "Enter the current annual forecast in today's money. The app uprates it only for nominal display."]);
+  }
+  if (getSecondJobProjectionWarning(state)) {
+    rows.push(["Job 2 boundary", getSecondJobProjectionWarning(state)]);
+  }
+  if (displayProjection.usesIncomeMix && !displayProjection.hasDcAssets) {
+    rows.push(["Income-mix boundary", "DB and State Pension rows use entered statement/forecast amounts, not a full actuarial valuation."]);
+  }
+
+  return rows;
+}
+
+function renderCalculationAuditPanel(projection) {
+  if (!els.calculationAuditPanel || !els.calculationAuditList) return;
+  els.calculationAuditPanel.hidden = false;
+  renderRows(els.calculationAuditList, getCalculationAuditRows(projection));
+}
+
 function getContributionMismatch() {
-  const breakdown = getContributionBreakdown(appState);
-  const expected =
-    normalizeEmploymentType(appState.employmentType) === "self"
-      ? breakdown.employeeMonthly
-      : toNumber(appState.payslipContribution) + breakdown.employerMonthly;
-  const mismatch = toNumber(appState.providerContribution) - expected;
+  const mismatch = getContributionReconciliation().difference;
   return Math.abs(mismatch) < 2 ? 0 : Math.round(mismatch);
 }
 
@@ -5576,8 +5712,35 @@ function getFutureDocumentExtractionNote() {
   return "Future document link: a live version could extract employer contribution, employee contribution, scheme type, charges, pot value and retirement age from uploaded or provider-linked documents.";
 }
 
+function getAssistantWhyText(context = {}, riskFlags = []) {
+  const topic = context?.topic || appState.assistantTopic;
+  const topicLabel = assistantQuestionGroups[topic]?.label || "selected topic";
+  const question = normalizeAssistantText(context?.question || appState.lastAssistantQuestion || "");
+  const current = getCurrentEmploymentRecord();
+  const reasons = [`Topic: ${topicLabel}`];
+
+  if (question && topic !== "planning") {
+    reasons.push("matched the question wording to this topic");
+  }
+  if (current?.employmentType === "multiple" || current?.secondJobEnabled) {
+    reasons.push("current record includes a Job 2 / multiple-jobs flag");
+  }
+  if (riskFlags.length) {
+    reasons.push(`risk flags: ${riskFlags.map((flag) => flag.label).join(", ")}`);
+  }
+  if (context?.boundaryGuard) {
+    reasons.push("the question crossed a regulated-advice boundary");
+  }
+  if (matchesAny(question, ["state pension", "national insurance", "ni record"])) {
+    reasons.push("the question mentions State Pension or National Insurance");
+  }
+
+  return reasons.join("; ");
+}
+
 function structuredAnswer({ label, answer, pensionType, action, basis, application, conclusion, documents, help, boundary, context }) {
   const riskFlags = getAssistantRiskFlags(context?.question, context);
+  const whyText = getAssistantWhyText(context, riskFlags);
   const docItems = getEnhancedDocumentList(documents, context, riskFlags)
     .map((doc) => `<li>${escapeHtml(doc)}</li>`)
     .join("");
@@ -5609,6 +5772,7 @@ function structuredAnswer({ label, answer, pensionType, action, basis, applicati
     <div class="answer-block legal-answer">
       <span class="answer-label">${escapeHtml(label)}</span>
       <p><strong>Short answer:</strong> ${escapeHtml(answer)}</p>
+      <p class="answer-why"><strong>Why this answer appeared:</strong> ${escapeHtml(whyText)}.</p>
       ${renderRiskFlagChips(riskFlags)}
       ${topBoundaryMarkup}
       <p><strong>Next step${topActionItems.length === 1 ? "" : "s"}:</strong></p>
@@ -7196,24 +7360,26 @@ function cacheElements() {
     "retireAgeInput",
     "currentPotInput",
     "currentPotField",
-	    "dbAnnualPensionField",
-	    "dbAnnualPensionInput",
-	    "dbSchemePensionAgeField",
-	    "dbSchemePensionAgeInput",
-	    "dbAmountBasisField",
-	    "dbAmountBasisInput",
-	    "dbRevaluationField",
-	    "dbRevaluationInput",
-	    "dbIndexationField",
-	    "dbIndexationInput",
-	    "dbAdjustmentField",
-	    "dbAdjustmentInput",
-	    "statePensionField",
-	    "statePensionAgeField",
-	      "goalInputModeCopy",
-	      "statePensionInput",
-	      "statePensionAgeInput",
-      "assumptionPanel",
+    "dbAnnualPensionField",
+    "dbAnnualPensionInput",
+    "dbSchemePensionAgeField",
+    "dbSchemePensionAgeInput",
+    "dbAmountBasisField",
+    "dbAmountBasisInput",
+    "dbRevaluationField",
+    "dbRevaluationInput",
+    "dbIndexationField",
+    "dbIndexationInput",
+    "dbAdjustmentField",
+    "dbAdjustmentInput",
+    "statePensionField",
+    "statePensionAgeField",
+    "goalInputModeCopy",
+    "statePensionInput",
+    "statePensionAgeInput",
+    "inputWarningPanel",
+    "inputWarningList",
+    "assumptionPanel",
     "assumptionPanelEyebrow",
     "moneyModeInput",
     "inflationInput",
@@ -7263,6 +7429,8 @@ function cacheElements() {
     "projectionTitle",
     "projectionBlockedState",
     "projectionBlockedCopy",
+    "secondJobBoundaryWarning",
+    "secondJobBoundaryCopy",
     "projectionScrubber",
     "scenarioInputGrid",
     "scenarioTypeInput",
@@ -7278,6 +7446,8 @@ function cacheElements() {
     "projectionFocusCopy",
     "projectionLegend",
     "projectionDetailList",
+    "calculationAuditPanel",
+    "calculationAuditList",
     "benchmarkList",
     "connectedMetricLabel",
     "assistantTopicList",
@@ -8458,6 +8628,7 @@ function render() {
   syncGoalInputMode();
   syncGoalLayout(projection);
   syncInputs();
+  renderInputWarningPanel(projection);
   renderPortfolioChrome();
   renderMetrics(projection);
   renderPosition(projection);
@@ -8478,6 +8649,7 @@ function render() {
   renderBenchmarkPanel(projection);
   renderGoalPathwayPanel(projection);
   renderProjectionInspector(projection);
+  renderCalculationAuditPanel(projection);
   renderAssistantTopicList();
   renderAssistantStarters();
   drawProjection(projection);
@@ -9674,6 +9846,7 @@ function renderBenchmarkPanel(projection) {
     ["Projected total / month", formatMoney(comparisonIncome / 12)],
     ["Benchmark position", tier.label],
     ["Gap to next benchmark", tier.nextTarget ? formatMoney(nextGap) : "Already above the top benchmark used here"],
+    ["Benchmark caveat", "Retirement Living Standards are spending benchmarks; this comparison is before any personal tax adjustment."],
     ["Assumptions", getProjectionAssumptionCopy(displayProjection)],
   ];
   const estateNote = shouldSurfaceEstatePlanningNote(displayProjection) ? getPrivatePensionIhtShortNote(displayProjection) : "";
@@ -9801,18 +9974,23 @@ function renderAssumptionDetails(projection) {
     ["Money view", projection.moneyMode === "today" ? "Today's money" : "Nominal at retirement"],
     ["Inflation assumption", `${formatPct(projection.state.inflationPct)} / year`],
     ["Net growth after charges", `${formatPct(projection.netGrowthPct)} / year`],
+    ["Effective monthly growth", formatPct(projection.monthlyRate * 100)],
     ["Salary / contribution growth", `${formatPct(projection.state.salaryGrowthPct)} salary / ${formatPct(projection.state.contributionEscalationPct)} contribution`],
     ["Estimated take-home cost", `${formatMoney(monthlyTakeHomeCost)} / month`],
+    ["Tax inputs use", "Tax relief, marginal tax and NI are used for this user-cost estimate; the pot projection uses gross contribution percentages."],
     ["Tax relief note", getTaxReliefNote(projection.state)],
   ];
   renderRows(els.assumptionDetailList, rows);
 
+  const reconciliation = getContributionReconciliation(projection);
   const confidenceRows = [
-    ["Current pot", toNumber(current?.potValue) > 0 ? "User-entered provider/statement value" : "Not entered"],
-    ["Contribution basis", current?.pensionablePayBasis === "unknown" ? "Unknown: check payslip/provider" : `User-entered ${current?.pensionablePayBasis}`],
-    ["State Pension", projection.hasStatePensionForecast ? "User-entered official forecast" : "Not entered"],
-    ["DB amount", projection.dbSummary?.hasDb ? "User-entered scheme statement value" : "Not used"],
-    ["Projection", "Modelled from visible assumptions"],
+    ["Current pot source", toNumber(current?.potValue) > 0 ? "User-entered" : "Not entered"],
+    ["Payslip source", reconciliation.payslip > 0 ? "User-entered; document-upload not connected in this demo" : "Not checked"],
+    ["Provider-linked status", "Not connected in this demo"],
+    ["Official forecast source", projection.hasStatePensionForecast ? "State Pension forecast entered by user" : "Not entered"],
+    ["DB amount source", projection.dbSummary?.hasDb ? "User-entered scheme statement" : "Not used"],
+    ["Confidence labels", "User-entered / Document-uploaded / Provider-linked / Official forecast"],
+    ["Payslip/provider status", reconciliation.status],
   ];
   renderRows(els.dataConfidenceList, confidenceRows);
 }
@@ -10826,6 +11004,7 @@ function getDefaultProjectionSegmentKey(projection) {
 
 function renderProjectionInspector(projection) {
   if (!els.projectionAgeInput || !els.projectionFocusCopy || !els.projectionDetailList || !els.projectionLegend || !els.projectionStatusRow) return;
+  renderProjectionBoundaryWarning(projection);
   if (els.projectionBlockedState) els.projectionBlockedState.hidden = !projection.isBlocked;
   if (els.projectionChart) els.projectionChart.hidden = projection.isBlocked;
   if (els.projectionInteraction) els.projectionInteraction.hidden = projection.isBlocked;

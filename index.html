@@ -11,7 +11,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
-    <link rel="stylesheet" href="styles.css?v=20260515-demo-accuracy">
+    <link rel="stylesheet" href="styles.css?v=20260515-audit-trail">
   </head>
   <body>
     <div class="onboarding-overlay active" id="onboardingOverlay" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
@@ -299,6 +299,7 @@
                     <label id="statePensionField">
                       State Pension forecast / year
                       <input id="statePensionInput" type="number" min="0" step="100">
+                      <span class="field-hint">Enter the current annual forecast in today's money. The app uprates it only for nominal display.</span>
                     </label>
                     <label id="statePensionAgeField">
                       State Pension age
@@ -337,6 +338,10 @@
                     </label>
                   </div>
                   <p class="panel-copy inline-guidance" id="goalInputModeCopy">This goal view is using the current record arrangement to decide which pension inputs matter for the projection.</p>
+                  <div class="notice-panel notice-warning input-warning-panel" id="inputWarningPanel" hidden>
+                    <p class="eyebrow">Check inputs</p>
+                    <div class="summary-list" id="inputWarningList"></div>
+                  </div>
                   <div class="assumption-panel" id="assumptionPanel">
                     <p class="eyebrow" id="assumptionPanelEyebrow">Projection assumptions</p>
                     <div class="segmented assumption-segmented" id="assumptionPresetList">
@@ -664,6 +669,11 @@
                   <h5>Confirm the arrangement before comparing retirement income</h5>
                   <p class="panel-copy" id="projectionBlockedCopy">No retirement projection is shown while any meaningful record is still marked Unknown.</p>
                 </div>
+                <div class="notice-panel notice-warning" id="secondJobBoundaryWarning" hidden>
+                  <p class="eyebrow">Projection boundary</p>
+                  <h5>Second job is not in the main pot projection</h5>
+                  <p class="panel-copy" id="secondJobBoundaryCopy">Job 2 is checked for workplace-pension rights only.</p>
+                </div>
                 <div class="projection-interaction" id="projectionInteraction">
                   <div class="projection-status-row" id="projectionStatusRow"></div>
                   <label class="projection-scrubber" id="projectionScrubber">
@@ -675,6 +685,15 @@
                 <canvas id="projectionChart" width="920" height="360" tabindex="0" aria-label="Projected cumulative pension wealth chart" aria-describedby="projectionFocusCopy"></canvas>
                 <div class="projection-legend" id="projectionLegend"></div>
                 <div class="summary-list projection-detail-list" id="projectionDetailList"></div>
+                <div class="calculation-audit-panel" id="calculationAuditPanel">
+                  <div class="panel-heading panel-heading-wrap">
+                    <div>
+                      <p class="eyebrow">Calculation audit trail</p>
+                      <h4>Assumptions behind the result</h4>
+                    </div>
+                  </div>
+                  <div class="summary-list calculation-audit-list" id="calculationAuditList"></div>
+                </div>
               </article>
 
               <div class="goal-detail-grid" id="goalDetailGrid">
@@ -765,6 +784,6 @@
       </button>
     </nav>
 
-    <script src="app.js?v=20260515-demo-accuracy"></script>
+    <script src="app.js?v=20260515-audit-trail"></script>
   </body>
 </html>
