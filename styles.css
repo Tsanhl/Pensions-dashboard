@@ -604,6 +604,29 @@ main {
   background: linear-gradient(180deg, #fff9ef 0%, #f7fbf6 100%);
 }
 
+.data-confidence-details {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.data-confidence-details summary {
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 720;
+  color: var(--ink);
+}
+
+.data-confidence-list .summary-row {
+  min-height: 42px;
+  border-radius: 14px;
+  grid-template-columns: minmax(6.5rem, 0.82fr) minmax(0, 1.18fr);
+}
+
+.data-confidence-list .summary-row strong {
+  white-space: normal;
+}
+
 .panel,
 .edit-panel {
   padding: 22px;
@@ -629,6 +652,19 @@ main {
 
 .demo-data-banner {
   margin-bottom: 16px;
+}
+
+.demo-banner-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.demo-mode-badge {
+  background: #ffffff;
+  color: #533b15;
 }
 
 .notice-panel h5 {
@@ -2209,6 +2245,7 @@ body[data-nav-style="bottom"] .message {
   }
 
   .compact-assumption-list .summary-row,
+  .data-confidence-list .summary-row,
   .calculation-audit-list .summary-row {
     grid-template-columns: 1fr;
   }

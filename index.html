@@ -11,7 +11,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
-    <link rel="stylesheet" href="styles.css?v=20260515-dashboard-confidence">
+    <link rel="stylesheet" href="styles.css?v=20260515-final-limits">
   </head>
   <body>
     <div class="onboarding-overlay active" id="onboardingOverlay" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
@@ -160,8 +160,13 @@
         <main>
           <section class="view active" id="dashboard" aria-label="Dashboard">
             <div class="notice-panel notice-warning demo-data-banner" id="demoDataBanner" hidden>
-              <p class="eyebrow">Demo data loaded</p>
-              <h5>These are fictional sample figures</h5>
+              <div class="demo-banner-head">
+                <div>
+                  <p class="eyebrow">Demo data loaded</p>
+                  <h5>These are fictional sample figures</h5>
+                </div>
+                <span class="data-badge demo-mode-badge">Demo mode: no live provider data</span>
+              </div>
               <p class="panel-copy" id="demoDataBannerCopy">They are accurate only within the assumptions shown and are not provider-verified.</p>
             </div>
 
@@ -190,6 +195,10 @@
                 <p>Data confidence</p>
                 <strong id="dataConfidenceValue">User-entered</strong>
                 <span id="dataConfidenceStatus">Sample data, not provider-linked records</span>
+                <details class="data-confidence-details">
+                  <summary>Evidence status</summary>
+                  <div class="summary-list data-confidence-list" id="dashboardDataConfidenceList"></div>
+                </details>
               </article>
             </div>
 
@@ -796,6 +805,6 @@
       </button>
     </nav>
 
-    <script src="app.js?v=20260515-dashboard-confidence"></script>
+    <script src="app.js?v=20260515-final-limits"></script>
   </body>
 </html>

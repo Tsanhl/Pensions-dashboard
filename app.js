@@ -3904,6 +3904,19 @@ function getContributionReconciliation(projection = calculateProjection()) {
   };
 }
 
+function getContributionReconciliationExplanation(reconciliation = getContributionReconciliation()) {
+  if (reconciliation.status === "Consistent") {
+    return "Payslip and provider values appear consistent because provider total roughly equals employer + employee contribution.";
+  }
+  if (reconciliation.status === "Possible mismatch") {
+    return "Possible mismatch: provider amount does not match expected employer + employee total.";
+  }
+  if (reconciliation.status === "Needs evidence") {
+    return "Needs evidence: payslip deduction is entered but no provider total is shown.";
+  }
+  return "Not checked: enter payslip deduction and provider contribution values.";
+}
+
 function getInputWarningRows(state = appState) {
   const current = getCurrentEmploymentRecord(state);
   const rows = [];
@@ -3955,6 +3968,7 @@ function renderProjectionBoundaryWarning(projection) {
 function getCalculationAuditRows(projection) {
   if (projection.isBlocked) {
     return [
+      ["Calculation status", "Illustrative only; not a provider forecast."],
       ["Projection status", "Blocked until the current arrangement is confirmed."],
       ["Model boundary", "Simplified planning projection: not an actuarial forecast, provider forecast, or regulated retirement-income recommendation."],
     ];
@@ -3969,6 +3983,7 @@ function getCalculationAuditRows(projection) {
   const current = getCurrentEmploymentRecord(state);
   if (!displayProjection.hasDcAssets && displayProjection.usesIncomeMix) {
     const rows = [
+      ["Calculation status", "Illustrative only; not a provider forecast."],
       ["Model boundary", "Simplified planning projection: not an actuarial forecast, provider forecast, or regulated retirement-income recommendation."],
       ["Arrangement", getPlanLabel(displayProjection.currentType)],
       ["Money view", displayProjection.moneyMode === "today" ? "Today's-money display" : "Nominal display"],
@@ -3989,6 +4004,7 @@ function getCalculationAuditRows(projection) {
   const employeeMonthly = monthlyBase * (toNumber(state.employeeContributionPct) / 100);
   const reconciliation = getContributionReconciliation(displayProjection);
   const rows = [
+    ["Calculation status", "Illustrative only; not a provider forecast."],
     ["Model boundary", "Simplified planning projection: not an actuarial forecast, provider forecast, or regulated retirement-income recommendation."],
     ["Current salary", formatMoney(toNumber(state.salary))],
     ["Pay basis", normalizePensionablePayBasis(state.pensionablePayBasis)],
@@ -4000,6 +4016,7 @@ function getCalculationAuditRows(projection) {
     ["Inflation and money view", `${formatPct(state.inflationPct)} inflation; ${displayProjection.moneyMode === "today" ? "today's-money display" : "nominal display"}`],
     ["Drawdown conversion", `${formatMoney(displayProjection.projectedPot)} x ${formatPct(state.drawdownPct)} = ${formatMoney(displayProjection.dcProjectedYearlyIncome)} / year`],
     ["Payslip/provider check", `Payslip says ${formatMoney(reconciliation.payslip)}; provider says ${formatMoney(reconciliation.provider)} total. Status: ${reconciliation.status}.`],
+    ["Why this status appeared", getContributionReconciliationExplanation(reconciliation)],
   ];
 
   if (displayProjection.hasPreviousDbHistory) {
@@ -5728,7 +5745,7 @@ function getAssistantWhyText(context = {}, riskFlags = []) {
     reasons.push("matched the question wording to this topic");
   }
   if (current?.employmentType === "multiple" || current?.secondJobEnabled) {
-    reasons.push("current record includes a Job 2 / multiple-jobs flag");
+    reasons.push("employment type is set to multiple jobs and Job 2 income is entered");
   }
   if (riskFlags.length) {
     reasons.push(`risk flags: ${riskFlags.map((flag) => flag.label).join(", ")}`);
@@ -7321,6 +7338,7 @@ function cacheElements() {
     "connectedStatus",
     "dataConfidenceValue",
     "dataConfidenceStatus",
+    "dashboardDataConfidenceList",
     "positionList",
     "schemeList",
     "contributionList",
@@ -8875,18 +8893,23 @@ function getDataConfidenceSummary(projection = calculateProjection()) {
   const reconciliation = getContributionReconciliation(projection);
   const demo = isDemoPortfolio(projection.state);
   const source = demo ? "User-entered example" : "User-entered";
+  const lastChecked = demo ? "demo only / not provider verified" : "user-entered / not provider verified";
   const status = demo
-    ? "These figures come from sample data, not provider-linked records."
-    : "These figures are user-entered until evidence is uploaded or provider feeds are connected.";
-  const verification = [
-    toNumber(current?.potValue) > 0 ? "Pot value: user-entered" : "Pot value: not entered",
-    reconciliation.status === "Consistent" ? "Contribution check: appears consistent" : `Contribution check: ${reconciliation.status.toLowerCase()}`,
-    projection.hasStatePensionForecast ? "State Pension: user-entered official forecast" : "State Pension: not entered",
+    ? "Sample data, no live provider feed."
+    : "User-entered until evidence is uploaded or provider feeds are connected.";
+  const rows = [
+    ["Pot value", toNumber(current?.potValue) > 0 ? "User-entered" : "Not entered"],
+    ["Contributions", reconciliation.status === "Not checked" ? "Not checked" : "User-entered payslip/provider values"],
+    ["Provider feed", "Not connected in demo"],
+    ["Official forecast", projection.hasStatePensionForecast ? "State Pension entered by user" : "Not entered"],
+    ["Last verified", "Not verified in demo"],
+    ["Last checked", lastChecked],
   ];
   return {
     source,
     status,
-    verification,
+    lastChecked,
+    rows,
   };
 }
 
@@ -8904,7 +8927,10 @@ function renderDashboardDataConfidence(projection) {
   if (!els.dataConfidenceValue || !els.dataConfidenceStatus) return;
   const confidence = getDataConfidenceSummary(projection);
   els.dataConfidenceValue.textContent = confidence.source;
-  els.dataConfidenceStatus.textContent = `${confidence.status} Upload or connect evidence in a production version to verify pot values, contributions, charges and scheme type.`;
+  els.dataConfidenceStatus.textContent = `${confidence.status} Last checked: ${confidence.lastChecked}.`;
+  if (els.dashboardDataConfidenceList) {
+    renderRows(els.dashboardDataConfidenceList, confidence.rows);
+  }
 }
 
 function renderPosition(projection) {
@@ -9014,6 +9040,7 @@ function renderContributions(projection) {
     ["Payslip deduction / month", formatMoney(appState.payslipContribution)],
     ["Provider shown / month", formatMoney(appState.providerContribution)],
     ["Contribution check", `Status: ${reconciliation.status}`],
+    ["Why this status appeared", getContributionReconciliationExplanation(reconciliation)],
     ["Expected provider total", formatMoney(reconciliation.expectedProviderTotal)],
     ["Pay basis", appState.pensionablePayBasis],
   ];
@@ -10046,6 +10073,8 @@ function renderAssumptionDetails(projection) {
     ["DB amount source", projection.dbSummary?.hasDb ? "User-entered scheme statement" : "Not used"],
     ["Confidence labels", "User-entered / Document-uploaded / Provider-linked / Official forecast"],
     ["Payslip/provider status", reconciliation.status],
+    ["Why status appeared", getContributionReconciliationExplanation(reconciliation)],
+    ["Last checked", isDemoPortfolio(projection.state) ? "Demo only / not provider verified" : "User-entered / not provider verified"],
   ];
   renderRows(els.dataConfidenceList, confidenceRows);
 }
