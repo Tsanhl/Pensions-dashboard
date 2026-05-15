@@ -1,6 +1,6 @@
 const STORAGE_KEY = "pension-portfolio-v1";
 const FULL_NEW_STATE_PENSION_WEEKLY_2026_27 = 241.3;
-const FULL_NEW_STATE_PENSION_2026_27 = Math.round(241.3 * 52);
+const FULL_NEW_STATE_PENSION_2026_27 = FULL_NEW_STATE_PENSION_WEEKLY_2026_27 * 52;
 const STATE_PENSION_MIN_QUALIFYING_YEARS = 10;
 const STATE_PENSION_FULL_RATE_YEARS = 35;
 const PENSION_IHT_CHANGE_DATE = "6 April 2027";
@@ -3222,12 +3222,21 @@ function getPrivatePensionIhtLongNote(projection) {
 function getStatePensionSummary(state = appState, atAge = state.retireAge) {
   const annual = Math.max(0, toNumber(state.statePension));
   const startAge = normalizeStatePensionAge(state.statePensionAge);
-  const included = annual > 0 && atAge >= startAge;
+  const currentAge = toNumber(state.age ?? appState.age);
+  const selectedAge = toNumber(atAge);
+  const inflationPct = Math.max(0, toNumber(state.inflationPct ?? appState.inflationPct));
+  const selectedAgeFactor = getAnnualFactor(inflationPct, Math.max(0, selectedAge - currentAge));
+  const startAgeFactor = getAnnualFactor(inflationPct, Math.max(0, startAge - currentAge));
+  const included = annual > 0 && selectedAge >= startAge;
+  const nominalYearlyIncome = annual * selectedAgeFactor;
+  const nominalAnnualAtStart = annual * startAgeFactor;
   return {
     annual,
     startAge,
     included,
-    yearlyIncome: included ? annual : 0,
+    yearlyIncome: included ? nominalYearlyIncome : 0,
+    nominalAnnualAtStart,
+    inflationFactor: selectedAgeFactor,
   };
 }
 
@@ -3495,8 +3504,12 @@ function calculateScenarioProjection(model = appState.scenarioModel, baseState =
     assumptions.push("Employer contribution returns at the current percentage once saving restarts.");
     series = buildProjectionSeries(state, {
       contributionFactorForMonth: (monthIndex) => (monthIndex < pauseMonths ? 0 : 1),
-      extraMonthlyContributionForMonth: (monthIndex, currentState) =>
-        monthIndex < pauseMonths ? 0 : ((currentState.salary / 12) * extraPct) / 100,
+      extraMonthlyContributionForMonth: (monthIndex, currentState) => {
+        if (monthIndex < pauseMonths) return 0;
+        const salaryGrowthFactor = getAnnualFactor(Math.max(0, toNumber(currentState.salaryGrowthPct)), monthIndex / 12);
+        const annualContributionBase = getAnnualContributionBase(currentState, currentState.salary * salaryGrowthFactor);
+        return (annualContributionBase / 12) * (extraPct / 100);
+      },
     });
   } else if (nextModel.type === "split-savings") {
     const extraMonthly = Math.max(25, nextModel.splitExtraMonthly || appState.scenarioModel?.splitExtraMonthly || 100);
@@ -3675,11 +3688,13 @@ function getProjectionAssumptionCopy(projection) {
   if (projection.isBlocked) {
     return "Projection blocked until the arrangement is confirmed.";
   }
-  const stateForecastCopy = projection.hasStatePensionForecast ? " The entered State Pension forecast is added when the selected age has reached State Pension age." : "";
+  const stateForecastCopy = projection.hasStatePensionForecast
+    ? " The entered State Pension forecast is carried forward with the inflation assumption for nominal comparisons and shown back in today's money where that view is selected."
+    : "";
   const dcAssumptionCopy = `${formatPct(projection.state.growthPct)} growth, ${formatPct(projection.state.annualChargePct)} charges, ${formatPct(projection.netGrowthPct)} net growth, ${formatPct(projection.state.drawdownPct)} withdrawal`;
   if (projection.hasPreviousDbHistory) {
     return projection.includesMixedStatePension
-      ? `${dcAssumptionCopy} on the current DC record, with previous DB promises and the entered State Pension forecast treated as fixed supplements.`
+      ? `${dcAssumptionCopy} on the current DC record, with previous DB promises treated separately and the entered State Pension forecast inflation-linked for the display mode.`
       : `${dcAssumptionCopy} on the current DC record, with previous DB promises treated as fixed supplements.`;
   }
   if (projection.dbSummary?.hasDb) {
@@ -3688,7 +3703,7 @@ function getProjectionAssumptionCopy(projection) {
       : `Current DB statement amount and scheme age.${stateForecastCopy}`;
   }
   if (projection.currentType === "State-only") {
-    return "State Pension forecast and State Pension age entered as shown";
+    return "State Pension forecast and State Pension age entered as shown, with the forecast inflation-linked for nominal comparisons.";
   }
   return `${dcAssumptionCopy} on the current DC record.${stateForecastCopy}`;
 }
@@ -3813,12 +3828,12 @@ function getGoalLayoutConfig(projection) {
       : "DC comparison",
     assumptionCopy: projection.hasPreviousDbHistory
       ? projection.includesMixedStatePension
-        ? "These assumption paths change only the current DC record. Previous DB promises and the entered State Pension forecast stay fixed."
+        ? "These assumption paths change only the current DC record. Previous DB promises stay separate, and the State Pension forecast follows the selected money view."
         : "These assumption paths change only the current DC record. Previous DB promises stay fixed."
       : shared.assumptionCopy,
     scenarioIntro: projection.hasPreviousDbHistory
       ? projection.includesMixedStatePension
-        ? "Any scenario change here applies only to the current DC record. Previous DB promises and the entered State Pension forecast stay fixed."
+        ? "Any scenario change here applies only to the current DC record. Previous DB promises stay separate, and the State Pension forecast follows the selected money view."
         : "Any scenario change here applies only to the current DC record. Previous DB promises stay fixed."
       : shared.scenarioIntro,
     stepThreeCopy: projection.hasPreviousDbHistory
@@ -4775,8 +4790,13 @@ function riskPathwayAnswer(question, projection, context) {
     answer =
       summary.missedEmployerAnnual > 0
         ? `The current record suggests possible missed employer contribution exposure of about ${formatMoney(summary.missedEmployerAnnual)} per year on the statutory minimum illustration.`
+        : summary.optInOpportunityAnnual > 0
+          ? `The current record shows an opt-in employer-contribution opportunity of about ${formatMoney(summary.optInOpportunityAnnual)} per year on the statutory minimum illustration, but that is not the same as a missed contribution unless an opt-in request or active membership should already have triggered it.`
         : "The current record does not currently show a clear missed employer-contribution exposure from the pathway data entered.";
-    conclusion = summary.missedEmployerAnnual > 0 ? summary.nextAction : `${summary.nextAction} Compare this with the actual payslips and provider record before assuming money is missing.`;
+    conclusion =
+      summary.missedEmployerAnnual > 0
+        ? summary.nextAction
+        : `${summary.nextAction} Compare this with opt-in letters, payslips and provider records before assuming money is missing.`;
   }
 
   return structuredAnswer({
@@ -4843,6 +4863,8 @@ function getActionSummaryItems(context) {
           )} total per year.`,
       summary.missedEmployerAnnual > 0
         ? `Possible missed employer contribution exposure: ${formatMoney(summary.missedEmployerAnnual)} / year.`
+        : summary.optInOpportunityAnnual > 0
+          ? `Opt-in employer contribution opportunity: ${formatMoney(summary.optInOpportunityAnnual)} / year if the opt-in route is used.`
         : summary.note,
     ];
   }
@@ -6363,6 +6385,10 @@ function applyPortfolioSnapshot(snapshot = {}, { touchSavedAt = false, starterMo
   };
 
   Object.assign(appState, nextState);
+  if (starterMode && starterMode.startsWith("example")) {
+    appState.projectionInspectorAge = toNumber(appState.retireAge);
+    appState.incomeMixAgeTouched = false;
+  }
   ensureEmploymentHistoryState();
   syncLegacyStateFromCurrentRecord();
   syncAssumptionPreset();
@@ -6595,6 +6621,8 @@ function getTailoredPathwayRows(summary, variant = "dashboard") {
 
   if (summary.missedEmployerAnnual > 0) {
     rows.push(["Possible missed employer contribution / year", formatMoney(summary.missedEmployerAnnual)]);
+  } else if (summary.optInOpportunityAnnual > 0) {
+    rows.push(["Opt-in employer contribution opportunity / year", formatMoney(summary.optInOpportunityAnnual)]);
   }
 
   if (variant === "goal" && summary.jobTwo) {
@@ -7727,7 +7755,7 @@ function applyDbExamplePortfolio() {
     employmentType: "employee",
     mainConcern: "retirement age",
     age: 45,
-    retireAge: 65,
+    retireAge: 67,
     salary: 52000,
     currentPot: 0,
     dbAnnualPensionAtSchemeAge: 18600,
@@ -9079,8 +9107,13 @@ function getJobCoverageSummary({
   const actualEmployeeAnnual = actualContributionBase * (toNumber(employeeContributionPct) / 100);
   const actualTotalAnnual = actualEmployerAnnual + actualEmployeeAnnual;
   const normalizedParticipation = normalizeSecondJobPensionParticipation(participation);
-  const missedEmployerAnnual =
-    route.employerContributionRequired && normalizedParticipation !== "active" ? statutoryEmployerAnnual : 0;
+  const optInOpportunityAnnual = route.key === "opt-in" && normalizedParticipation !== "active" ? statutoryEmployerAnnual : 0;
+  const autoEnrolMissingAnnual = route.key === "auto-enrol" && normalizedParticipation !== "active" ? statutoryEmployerAnnual : 0;
+  const activeMinimumShortfall =
+    route.employerContributionRequired && normalizedParticipation === "active"
+      ? Math.max(0, statutoryEmployerAnnual - actualEmployerAnnual)
+      : 0;
+  const missedEmployerAnnual = Math.max(autoEnrolMissingAnnual, activeMinimumShortfall);
 
   return {
     label,
@@ -9094,6 +9127,7 @@ function getJobCoverageSummary({
     actualEmployeeAnnual,
     actualTotalAnnual,
     participation: normalizedParticipation,
+    optInOpportunityAnnual,
     missedEmployerAnnual,
     payBasis: normalizePensionablePayBasis(pensionablePayBasis),
   };
@@ -9152,6 +9186,7 @@ function getTailoredPathwaySummary(projection = calculateProjection()) {
   const priority =
     groups.includes("multiple-jobs") ? "multiple-jobs" : groups.includes("low-earner") ? "low-earner" : groups[0];
   const missedEmployerAnnual = jobOne.missedEmployerAnnual + (jobTwo?.missedEmployerAnnual || 0);
+  const optInOpportunityAnnual = jobOne.optInOpportunityAnnual + (jobTwo?.optInOpportunityAnnual || 0);
   const combinedIncome = jobOne.income + (jobTwo?.income || 0);
   let nextAction = "Keep the job details and pension letters together, then check the employer route in writing.";
 
@@ -9159,7 +9194,9 @@ function getTailoredPathwaySummary(projection = calculateProjection()) {
     nextAction =
       jobTwo && missedEmployerAnnual > 0
         ? "Check each employer separately. Combined pay does not create automatic enrolment, but opt-in rights and missed employer contributions can still exist job by job."
-        : "Keep each job separate in pension checks. Combined pay is context only, not the legal automatic-enrolment test.";
+        : jobTwo && optInOpportunityAnnual > 0
+          ? "Check each employer separately. Combined pay does not create automatic enrolment, but an opt-in request can create an employer-contribution route job by job."
+          : "Keep each job separate in pension checks. Combined pay is context only, not the legal automatic-enrolment test.";
   } else if (priority === "low-earner") {
     nextAction =
       jobOne.route.key === "opt-in"
@@ -9195,6 +9232,7 @@ function getTailoredPathwaySummary(projection = calculateProjection()) {
     combinedStatutoryEmployerAnnual: jobOne.statutoryEmployerAnnual + (jobTwo?.statutoryEmployerAnnual || 0),
     combinedStatutoryTotalAnnual: jobOne.statutoryTotalAnnual + (jobTwo?.statutoryTotalAnnual || 0),
     missedEmployerAnnual,
+    optInOpportunityAnnual,
     benchmarkTier,
   };
 
@@ -10044,11 +10082,14 @@ function getDbCalculationRows(projection) {
     if (details.indexationPct > 0 || details.adjustmentPct !== 0) {
       rows.push(["DB adjustment assumptions", `${formatPct(details.indexationPct)} indexation / ${formatPct(details.adjustmentPct)} early-late factor`]);
     }
-    rows.push(["App calculation", `${formatMoney(annual)} / year / 12 = ${formatMoney(monthly)} / month`]);
+    rows.push(["App calculation", `${formatMoney(annual)} / year / 12 = ${formatMoney(monthly)} / month before the selected money-view adjustment`]);
+    if (details.included && projection.moneyMode === "today") {
+      rows.push(["Displayed in today's money", `${formatProjectionMoney(projection, annual / 12)} / month`]);
+    }
     rows.push([
       "Selected age",
       details.included
-        ? `Age ${selectedAge}: ${formatMoney(monthly)} / month`
+        ? `Age ${selectedAge}: ${formatProjectionMoney(projection, annual / 12)} / month in the selected money view`
         : `Age ${selectedAge}: not payable yet; starts at age ${schemeAge}`,
     ]);
     if (projection.hasGoal) {
@@ -10086,11 +10127,14 @@ function getStatePensionCalculationRows(projection) {
   rows.push(["Important exception", "Contracted-out or pre-2016 National Insurance records can produce a different result, so the official forecast always overrides this simple illustration."]);
 
   if (annual > 0) {
-    rows.push(["App calculation", `${formatMoney(annual)} / year / 12 = ${formatMoney(monthly)} / month`]);
+    rows.push(["Entered forecast", `${formatMoney(annual)} / year / 12 = ${formatMoney(monthly)} / month in today's terms`]);
+    if (projection.statePensionSummary?.included && projection.moneyMode === "nominal") {
+      rows.push(["Nominal at selected age", `${formatMoney(projection.statePensionSummary.yearlyIncome / 12)} / month`]);
+    }
     rows.push([
       "Selected age",
       selectedAge >= startAge
-        ? `Age ${selectedAge}: ${formatMoney(monthly)} / month`
+        ? `Age ${selectedAge}: ${formatProjectionMoney(projection, projection.statePensionSummary.yearlyIncome / 12)} / month in the selected money view`
         : `Age ${selectedAge}: not payable yet; starts at age ${startAge}`,
     ]);
     if (projection.hasGoal) {
@@ -10745,12 +10789,12 @@ function getStatePensionIncomeSegment(projection) {
         ? `Starts at age ${projection.statePensionSummary.startAge}`
         : "No forecast entered",
     note: projection.statePensionSummary.included
-      ? "This uses the entered annual State Pension forecast because the selected comparison age has reached State Pension age."
+      ? "This uses the entered annual State Pension forecast, carried forward with the inflation assumption for the selected money view."
       : hasStateForecast
         ? `This State Pension forecast is not counted yet because it starts at age ${projection.statePensionSummary.startAge}.`
         : "No State Pension forecast has been entered yet.",
     startAge: projection.statePensionSummary.startAge,
-    annualAtStart: projection.statePensionSummary.annual,
+    annualAtStart: projection.statePensionSummary.nominalAnnualAtStart,
     startsLater: hasStateForecast && !projection.statePensionSummary.included,
     isMissing: !hasStateForecast,
   });
