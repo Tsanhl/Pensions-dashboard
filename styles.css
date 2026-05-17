@@ -572,6 +572,8 @@ main {
   overflow: hidden;
   padding: 20px;
   display: grid;
+  grid-template-rows: 3.25rem minmax(2.1rem, auto) 1fr;
+  align-content: start;
   gap: 8px;
   min-height: 146px;
 }
@@ -582,10 +584,19 @@ main {
   color: var(--muted);
 }
 
+.metric-card p {
+  min-height: 3.25rem;
+  display: flex;
+  align-items: flex-start;
+}
+
 .metric-card strong {
-  display: block;
+  display: flex;
+  align-items: baseline;
+  min-height: 2.1rem;
   font-size: 2rem;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .metric-strong {
